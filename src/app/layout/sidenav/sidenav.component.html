@@ -3,7 +3,7 @@
     <div class="sidenav__group">
       <p>{{ section.title }}</p>
       @for (link of section.links; track link.label) {
-        <a [routerLink]="link.path" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">{{ link.label }}</a>
+        <a [routerLink]="link.path" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: false }" ariaCurrentWhenActive="page">{{ link.label }}</a>
       }
     </div>
   }

@@ -1,0 +1,84 @@
+@if (missing()) {
+  <div class="roster-head">
+    <div class="roster-head__title">
+      <h1>公告</h1>
+    </div>
+    <nav class="crumb" aria-label="麵包屑">
+      <ol>
+        <li><a [href]="portalHome">首頁</a></li>
+        <li><a routerLink="/manage">公告管理</a></li>
+      </ol>
+    </nav>
+  </div>
+  <p class="missing">找不到這則公告。</p>
+  <a class="back" routerLink="/manage">回列表</a>
+} @else {
+  <div class="roster-head">
+    <div class="roster-head__title">
+      <h1>{{ editing() ? '編輯公告' : '公告發布' }}</h1>
+    </div>
+    <nav class="crumb" aria-label="麵包屑">
+      <ol>
+        <li><a [href]="portalHome">首頁</a></li>
+        @if (editing()) {
+          <li><a routerLink="/manage">公告管理</a></li>
+          <li aria-current="page">編輯公告</li>
+        } @else {
+          <li aria-current="page">公告發布</li>
+        }
+      </ol>
+    </nav>
+  </div>
+  <form class="sheet" (submit)="save($event)">
+    <label class="field">
+      <span>類型</span>
+      <select [value]="kind()" (change)="kind.set(kindValue($event))">
+        @for (option of kinds; track option.id) {
+          <option [value]="option.id">{{ option.label }}</option>
+        }
+      </select>
+    </label>
+    @if (editing()) {
+      <p class="serial">編號 {{ serial() }}</p>
+    }
+    <label class="field">
+      <span>主旨</span>
+      <input [value]="title()" (input)="title.set(fieldValue($event))">
+    </label>
+    <label class="field">
+      <span>發文字號</span>
+      <input [value]="documentNo()" (input)="documentNo.set(fieldValue($event))">
+    </label>
+    <label class="field">
+      <span>發布日期</span>
+      <input type="date" [value]="publishedOn()" (input)="publishedOn.set(fieldValue($event))">
+    </label>
+    <label class="field">
+      <span>刊登日期</span>
+      <input type="date" [value]="listedOn()" (input)="listedOn.set(fieldValue($event))">
+    </label>
+    <label class="field">
+      <span>截止日期</span>
+      <input type="date" [value]="endsOn()" (input)="endsOn.set(fieldValue($event))">
+      <small>沒填就一直掛著。</small>
+    </label>
+    <label class="field">
+      <span>對象</span>
+      <input [value]="audience()" (input)="audience.set(fieldValue($event))">
+    </label>
+    <label class="field">
+      <span>公告機關</span>
+      <input [value]="unit()" (input)="unit.set(fieldValue($event))">
+    </label>
+    <label class="field">
+      <span>內文</span>
+      <textarea [value]="body()" (input)="body.set(fieldValue($event))"></textarea>
+    </label>
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    <div class="submit">
+      <button type="submit">{{ editing() ? '儲存' : '發布' }}</button>
+    </div>
+  </form>
+}

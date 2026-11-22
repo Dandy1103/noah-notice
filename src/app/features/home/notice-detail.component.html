@@ -1,0 +1,67 @@
+@if (notice(); as item) {
+  <nav class="crumb" aria-label="麵包屑">
+    <ol>
+      <li><a [href]="portalHome">首頁</a></li>
+      <li><a [routerLink]="'/' + kindPath(item.kind)">{{ kindLabel(item.kind) }}</a></li>
+    </ol>
+  </nav>
+  <article class="sheet">
+    <h1>{{ item.title }}</h1>
+    <dl class="facts">
+      <div>
+        <dt>編號</dt>
+        <dd>{{ item.serial }}</dd>
+      </div>
+      <div>
+        <dt>公告機關</dt>
+        <dd>{{ item.unit }}</dd>
+      </div>
+      <div>
+        <dt>發布日期</dt>
+        <dd><time [attr.datetime]="item.publishedOn">{{ shownDate(item.publishedOn) }}</time></dd>
+      </div>
+      <div>
+        <dt>發文字號</dt>
+        <dd>{{ item.documentNo }}</dd>
+      </div>
+      <div>
+        <dt>刊登日期</dt>
+        <dd><time [attr.datetime]="item.listedOn">{{ shownDate(item.listedOn) }}</time></dd>
+      </div>
+      <div>
+        <dt>截止日期</dt>
+        <dd>
+          @if (item.endsOn) {
+            <time [attr.datetime]="item.endsOn">{{ shownDate(item.endsOn) }}</time>
+          } @else {
+            —
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>類型</dt>
+        <dd>{{ kindLabel(item.kind) }}</dd>
+      </div>
+      <div>
+        <dt>對象</dt>
+        <dd>{{ item.audience }}</dd>
+      </div>
+    </dl>
+    <p class="body">{{ item.body }}</p>
+    <a class="back" [routerLink]="'/' + kindPath(item.kind)">回列表</a>
+  </article>
+} @else {
+  <div class="roster-head">
+    <div class="roster-head__title">
+      <h1>公告</h1>
+    </div>
+    <nav class="crumb" aria-label="麵包屑">
+      <ol>
+        <li><a [href]="portalHome">首頁</a></li>
+        <li aria-current="page">公告</li>
+      </ol>
+    </nav>
+  </div>
+  <p class="missing">找不到這則公告。</p>
+  <a class="back" routerLink="/operations">回列表</a>
+}
