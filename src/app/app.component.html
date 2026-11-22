@@ -1,5 +1,10 @@
 <app-header />
-<app-navbar />
-<main class="workspace">
-  <router-outlet />
-</main>
+<div class="app">
+  <app-navbar />
+  <div class="shell">
+    <app-sidenav />
+    <main class="workspace">
+      <router-outlet />
+    </main>
+  </div>
+</div>

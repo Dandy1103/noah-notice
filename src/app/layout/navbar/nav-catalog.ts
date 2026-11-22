@@ -43,6 +43,16 @@ export interface NavGroup {
   sections: NavSection[];
 }
 
+export interface SideLink {
+  label: string;
+  path: string;
+}
+
+export interface SideSection {
+  title: string;
+  links: SideLink[];
+}
+
 const LOCAL_ORIGINS: Record<string, string> = {
   'noah-portal': 'http://localhost:4200/',
   'noah-hrm': 'http://localhost:4201/',
@@ -96,6 +106,27 @@ export function catalogUrl(): string {
 
 export function fallbackGroups(self: string): NavGroup[] {
   return applyNav(FALLBACK, self);
+}
+
+export function sideSections(catalog: NavCatalog, self: string): SideSection[] {
+  const group = catalog.groups.find((item) => item && item.app === self);
+  if (!group || !Array.isArray(group.sections)) return [];
+  const sections: SideSection[] = [];
+  for (const section of group.sections) {
+    if (!section || typeof section.title !== 'string' || !Array.isArray(section.links)) continue;
+    const links: SideLink[] = [];
+    for (const link of section.links) {
+      if (!link || typeof link.label !== 'string') continue;
+      const path = typeof link.path === 'string' ? link.path : '';
+      links.push({ label: link.label, path: path ? `/${path}` : '/' });
+    }
+    sections.push({ title: section.title, links });
+  }
+  return sections;
+}
+
+export function fallbackSide(self: string): SideSection[] {
+  return sideSections(FALLBACK, self);
 }
 
 export function loadCatalog(signal: AbortSignal): Promise<NavCatalog | null> {
