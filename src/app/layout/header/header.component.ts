@@ -1,14 +1,15 @@
-import { Component } from '@angular/core';
-import { NoahHeaderComponent } from '@dandy1103/header';
+import { Component, inject } from '@angular/core';
+import { NoahHeaderComponent } from '@dandy1103/ui';
+import { AccountService } from '../account.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [NoahHeaderComponent],
-  templateUrl: './header.component.html',
+  template: `<noah-header [userName]="userName()"></noah-header>`,
 })
 export class HeaderComponent {
-  readonly portalHomeUrl = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
-    ? 'http://localhost:4200/'
-    : 'https://noahportal.dandy-cheng.com/';
+  private readonly account = inject(AccountService);
+
+  readonly userName = this.account.name;
 }

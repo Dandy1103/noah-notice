@@ -1,0 +1,116 @@
+<div class="scrim" (click)="close()">
+  <section
+    class="panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="review-dialog-title"
+    (click)="$event.stopPropagation()">
+    <header class="head">
+      <div class="head__text">
+        <p class="eyebrow">申請預覽</p>
+        <h2 id="review-dialog-title">{{ notice.title }}</h2>
+        <p class="people">
+          <span>申請人 {{ applicantLabel(notice) }}</span>
+          <span>審核人 {{ reviewerLabel(notice) }}</span>
+          <span class="application-date">送審時間 <time [attr.datetime]="notice.publishedOn">{{ shownDate(notice.publishedOn) }}</time></span>
+        </p>
+      </div>
+      <button type="button" class="close" autofocus aria-label="關閉" (click)="close()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" />
+        </svg>
+      </button>
+    </header>
+    <div class="canvas">
+      <section class="block" aria-labelledby="review-body-title">
+        <h3 id="review-body-title">內文</h3>
+        <p class="body">{{ notice.body }}</p>
+      </section>
+      @if (notice.attachments?.length) {
+        <section class="block" aria-labelledby="review-attachments-title">
+          <h3 id="review-attachments-title">附件</h3>
+          <ul class="attachments">
+            @for (attachment of notice.attachments; track attachment.url) {
+              <li><a [href]="attachment.url" [attr.download]="attachment.name">{{ attachment.name }}</a></li>
+            }
+          </ul>
+        </section>
+      }
+      <section class="block" aria-labelledby="review-facts-title">
+        <h3 id="review-facts-title">申請資料</h3>
+        <dl class="facts">
+          <div>
+            <dt>編號</dt>
+            <dd>{{ notice.serial }}</dd>
+          </div>
+          <div>
+            <dt>申請單位</dt>
+            <dd>{{ notice.unit }}</dd>
+          </div>
+          <div>
+            <dt>對象</dt>
+            <dd>{{ notice.audience }}</dd>
+          </div>
+          <div>
+            <dt>類型</dt>
+            <dd>{{ kindLabel(notice.kind) }}</dd>
+          </div>
+          <div>
+            <dt>申請人</dt>
+            <dd>{{ applicantLabel(notice) }}</dd>
+          </div>
+          <div>
+            <dt>狀態</dt>
+            <dd><span class="status-tag" [attr.data-status]="notice.status">{{ statusLabel(notice.status) }}</span></dd>
+          </div>
+          <div>
+            <dt>審核人</dt>
+            <dd>{{ reviewerLabel(notice) }}</dd>
+          </div>
+          @if (notice.reviewedOn) {
+            <div>
+              <dt>審核時間</dt>
+              <dd><time [attr.datetime]="notice.reviewedOn">{{ shownDate(notice.reviewedOn) }}</time></dd>
+            </div>
+          }
+          <div>
+            <dt>刊登時間</dt>
+            <dd>
+              @if (notice.status === 'approved' || notice.status === 'withdrawn') {
+                <time [attr.datetime]="notice.listedOn">{{ shownDate(notice.listedOn) }}</time>
+              } @else {
+                —
+              }
+            </dd>
+          </div>
+        </dl>
+      </section>
+      @if (notice.status === 'rejected' && notice.rejectReason) {
+        <section class="block" aria-labelledby="review-saved-reason">
+          <h3 id="review-saved-reason">退回原因</h3>
+          <p class="body">{{ notice.rejectReason }}</p>
+        </section>
+      }
+    </div>
+    @if (notice.status === 'pending') {
+      <footer class="decision">
+        @if (isRejecting()) {
+          <input
+            class="reason"
+            type="text"
+            aria-label="拒絕原因"
+            placeholder="請輸入拒絕原因"
+            autofocus
+            [value]="reason()"
+            [attr.aria-invalid]="reasonError()"
+            (input)="reason.set(fieldValue($event)); reasonError.set(false)" />
+          <button type="button" class="is-back" (click)="cancelReject()">返回</button>
+          <button type="button" class="is-decline" (click)="confirmReject()">送出退回</button>
+        } @else {
+          <button type="button" class="is-agree" (click)="agree()">核准上架</button>
+          <button type="button" class="is-decline" (click)="startReject()">退回修改</button>
+        }
+      </footer>
+    }
+  </section>
+</div>

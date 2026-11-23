@@ -1,3 +1,21 @@
+:host {
+  display: block;
+}
+
+app-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #fff;
+}
+
+app-navbar {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 30;
+  background: #fff;
+}
+
 .app {
   display: grid;
   grid-template-rows: auto 1fr;

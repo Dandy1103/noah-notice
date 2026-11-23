@@ -1,0 +1,31 @@
+<div class="picker">
+  <button type="button" class="picker__control" [class.is-empty]="!shown" [attr.aria-expanded]="open()" (click)="toggle()">
+    <span>{{ shown || '年 / 月 / 日' }}</span>
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="2.5" y="3.5" width="11" height="10" rx="1.5" />
+      <path d="M5 2.5v2M11 2.5v2M2.5 6.5h11" />
+    </svg>
+  </button>
+  @if (open()) {
+    <div class="calendar">
+      <div class="calendar__bar">
+        <button type="button" aria-label="上個月" (click)="shiftMonth(-1)">‹</button>
+        <p>{{ title() }}</p>
+        <button type="button" aria-label="下個月" (click)="shiftMonth(1)">›</button>
+      </div>
+      <div class="calendar__week">
+        @for (day of weekdays; track day) {
+          <span>{{ day }}</span>
+        }
+      </div>
+      <div class="calendar__days">
+        @for (cell of cells(); track $index) {
+          <button type="button" [disabled]="!cell.value || isOutOfRange(cell.value)" [attr.aria-pressed]="cell.value && cell.value === value ? true : null" (click)="choose(cell.value)">
+            {{ cell.label }}
+          </button>
+        }
+      </div>
+      <button type="button" class="calendar__clear" (click)="clear()">清除</button>
+    </div>
+  }
+</div>

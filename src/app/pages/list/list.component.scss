@@ -1,0 +1,23 @@
+@import '../styles/roster-head';
+@import '../styles/notice-list';
+
+:host {
+  display: block;
+}
+
+.notice-list table {
+  min-width: 684px;
+}
+
+.col-no {
+  width: 64px;
+}
+
+.col-org,
+.col-who {
+  width: 112px;
+}
+
+.col-date {
+  width: 160px;
+}

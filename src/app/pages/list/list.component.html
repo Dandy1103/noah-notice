@@ -1,0 +1,110 @@
+<div class="roster-head">
+  <div class="roster-head__title">
+    <h1>{{ title() }}</h1>
+  </div>
+  <nav class="crumb" aria-label="麵包屑">
+    <ol>
+      <li><a [href]="portalHome">首頁</a></li>
+      <li aria-current="page">{{ title() }}</li>
+    </ol>
+  </nav>
+</div>
+
+<form class="notice-query" (submit)="search($event)">
+  <label>
+    <span>對象</span>
+    <app-select [value]="audiencePick()" [options]="audienceChoices()" (valueChange)="audiencePick.set($event)" />
+  </label>
+  <label>
+    <span>單位</span>
+    <app-select [value]="unitPick()" [options]="unitChoices()" (valueChange)="unitPick.set($event)" />
+  </label>
+  <label>
+    <span>主旨</span>
+    <input placeholder="輸入主旨" [value]="titlePick()" (input)="titlePick.set(fieldValue($event))">
+  </label>
+  <div class="notice-query__actions">
+    <button type="submit">搜尋</button>
+    <button type="button" class="is-secondary" (click)="clear()">清除</button>
+  </div>
+</form>
+
+<div class="notice-filter">
+  <input aria-label="篩選" placeholder="篩選關鍵字" [value]="filterText()" (input)="pickFilter($event)">
+</div>
+
+<div class="notice-list" [class.is-idle]="pageRows().length === 0">
+  <table>
+    <colgroup>
+      <col class="col-no">
+      <col class="col-org">
+      <col>
+      <col class="col-who">
+      <col class="col-date">
+    </colgroup>
+    <thead>
+      <tr>
+        <th scope="col">編號</th>
+        <th scope="col">單位</th>
+        <th scope="col">主旨</th>
+        <th scope="col">對象</th>
+        <th scope="col">日期</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of pageRows(); track item.id; let isEven = $even) {
+        <tr class="is-link" [class.is-even]="isEven" [class.is-odd]="!isEven" [class.is-expanded]="opened()?.id === item.id" tabindex="0" (click)="openNotice(item.id)" (keydown.enter)="openNotice(item.id)">
+          <td>{{ item.serial }}</td>
+          <td>{{ item.unit }}</td>
+          <td class="title">{{ item.title }}</td>
+          <td>{{ item.audience }}</td>
+          <td><time [attr.datetime]="item.listedOn">{{ shownDate(item.listedOn) }}</time></td>
+        </tr>
+        @if (opened()?.id === item.id) {
+          <tr class="inline-detail" [class.is-even]="isEven" [class.is-odd]="!isEven">
+            <td colspan="5">
+              <h3>內文</h3>
+              <p class="inline-detail__body">{{ item.body }}</p>
+              @if (item.attachments?.length) {
+                <h3>附件</h3>
+                <ul class="inline-detail__attachments">
+                  @for (attachment of item.attachments; track attachment.url) {
+                    <li><a [href]="attachment.url" [attr.download]="attachment.name">{{ attachment.name }}</a></li>
+                  }
+                </ul>
+              }
+            </td>
+          </tr>
+        }
+      }
+      @if (pageRows().length === 0) {
+        <tr class="is-empty">
+          <td colspan="5">
+            <div class="empty">
+              <p>{{ emptyText() }}</p>
+            </div>
+          </td>
+        </tr>
+      }
+      @for (blank of blankRows(); track blank) {
+        @if (pageRows().length > 0) {
+          <tr class="is-blank">
+            <td colspan="5"></td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+  <nav class="pager" aria-label="換頁">
+      <button type="button" (click)="shiftPage(-1)" [disabled]="page() === 1">上一頁</button>
+      @for (number of pageNumbers(); track number) {
+        <button type="button"
+          [class.is-current]="number === page()"
+          [attr.aria-current]="number === page() ? 'page' : null"
+          [attr.aria-label]="'第 ' + number + ' 頁'"
+          (click)="goPage(number)">{{ number }}</button>
+      }
+      <button type="button" (click)="shiftPage(1)" [disabled]="page() === pageCount()">下一頁</button>
+    </nav>
+</div>
+

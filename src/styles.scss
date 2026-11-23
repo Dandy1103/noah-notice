@@ -1,6 +1,6 @@
 :root {
-  --brand: #001430;
-  --color-primary: #001430;
+  --brand: #407fec;
+  --color-primary: var(--brand);
   --color-text-primary: #0f172a;
   --color-text-secondary: #64748b;
   --color-border: #e2e8f0;
@@ -9,6 +9,7 @@
   --radius-sm: 4px;
   --shadow-md: 0 4px 12px rgb(15 23 42 / 8%);
   --header-height: 60px;
+  --navbar-height: 45px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -16,7 +17,7 @@
 body {
   margin: 0;
   background: #f8fafc;
-  color: #0f172a;
+  color: var(--color-text-primary);
   font-family: Inter, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
   font-size: 16px;
 }

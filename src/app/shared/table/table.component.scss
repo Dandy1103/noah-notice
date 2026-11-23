@@ -27,7 +27,7 @@ app-table {
     color: #334155;
     font-weight: 600;
     white-space: nowrap;
-    border-bottom: 2px solid #001430;
+    border-bottom: 2px solid var(--color-primary);
 }
 
 .data-table td {

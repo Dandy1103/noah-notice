@@ -1,0 +1,38 @@
+.toast {
+  position: fixed;
+  z-index: 350;
+  top: 80px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 240px;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  background: #fff;
+  color: #166534;
+  font-weight: 600;
+  box-shadow: 0 12px 28px rgb(15 23 42 / 16%);
+}
+
+.toast svg {
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 50%;
+  background: #dcfce7;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 520px) {
+  .toast {
+    right: 16px;
+    left: 16px;
+  }
+}

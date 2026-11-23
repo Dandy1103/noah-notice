@@ -1,0 +1,195 @@
+@if (missing()) {
+  <div class="roster-head">
+    <div class="roster-head__title">
+      <h1>公告</h1>
+    </div>
+    <nav class="crumb" aria-label="麵包屑">
+      <ol>
+        <li><a [href]="portalHome">首頁</a></li>
+        <li><a routerLink="/manage">公告管理</a></li>
+      </ol>
+    </nav>
+  </div>
+  <p class="missing">找不到這則公告。</p>
+  <a class="back" routerLink="/manage">回列表</a>
+} @else {
+  <div class="roster-head">
+    <div class="roster-head__title">
+      <h1>公告申請</h1>
+    </div>
+    <nav class="crumb" aria-label="麵包屑">
+      <ol>
+        <li><a [href]="portalHome">首頁</a></li>
+        <li aria-current="page">公告申請</li>
+      </ol>
+    </nav>
+  </div>
+  @if (mode() === 'new') {
+    <div class="application-scrim" (click)="show('mine')">
+      <section
+        class="application-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="application-dialog-title"
+        (click)="$event.stopPropagation()">
+        <header class="dialog-head">
+          <div>
+            <p class="eyebrow">公告申請</p>
+            <h2 id="application-dialog-title">{{ editing() ? '修改申請' : '新增申請' }}</h2>
+          </div>
+          <button type="button" aria-label="關閉" (click)="show('mine')">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </header>
+        <form class="sheet" (submit)="save($event)">
+    <label class="field is-wide">
+      <span>主旨</span>
+      <input [value]="title()" (input)="title.set(fieldValue($event))">
+    </label>
+    <label class="field">
+      <span>類型</span>
+      <app-select [value]="kind()" [options]="kindOptions" (valueChange)="setKind($event)" />
+    </label>
+    <label class="field">
+      <span>對象</span>
+      <app-select [value]="audience()" [options]="audienceOptions" (valueChange)="audience.set($event)" />
+    </label>
+    <label class="field">
+      <span>內文</span>
+      <textarea [value]="body()" (input)="body.set(fieldValue($event))"></textarea>
+    </label>
+    <div class="field is-wide">
+      <span>附件（選填）</span>
+      <input id="notice-attachments" class="file-input" type="file" multiple (change)="pickAttachments($event)">
+      <label class="upload-picker" for="notice-attachments">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+        </svg>
+        <span class="upload-picker__text">
+          <strong>選擇附件</strong>
+          <small>可一次選擇多個檔案</small>
+        </span>
+      </label>
+      @if (attachments().length) {
+        <ul class="selected-files" aria-label="已選附件">
+          @for (attachment of attachments(); track attachment.url) {
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 3h7l4 4v14H7zM14 3v5h5" />
+              </svg>
+              <span>{{ attachment.name }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    <div class="submit">
+      <button type="submit">{{ editing() ? '儲存變更' : '儲存申請' }}</button>
+      <button type="button" class="is-back" (click)="show('mine')">返回列表</button>
+    </div>
+        </form>
+      </section>
+    </div>
+  }
+  <div class="application-actions">
+    <button type="button" class="new-application" (click)="startNew()">新增申請</button>
+  </div>
+  <div class="notice-list application-list" [class.is-idle]="myApplications().length === 0">
+      <table>
+        <colgroup>
+          <col class="col-no">
+          <col class="col-kind">
+          <col class="col-org">
+          <col class="col-status">
+          <col class="col-title">
+          <col class="col-who">
+          <col class="col-date">
+          <col class="col-reviewer">
+          <col class="col-action">
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col">編號</th>
+            <th scope="col">類型</th>
+            <th scope="col">公告單位</th>
+            <th scope="col">狀態</th>
+            <th scope="col">主旨</th>
+            <th scope="col">對象</th>
+            <th scope="col">送審時間</th>
+            <th scope="col">審核者</th>
+            <th scope="col">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of myApplications(); track item.id; let isEven = $even) {
+            <tr class="is-link" [class.is-even]="isEven" [class.is-odd]="!isEven" [class.is-expanded]="openedApplicationId() === item.id" tabindex="0" (click)="toggleApplication(item.id)" (keydown.enter)="toggleApplication(item.id)">
+              <td>{{ item.serial }}</td>
+              <td>{{ kindLabel(item.kind) }}</td>
+              <td>{{ item.unit }}</td>
+              <td class="status-cell"><span class="status-tag" [attr.data-status]="item.status">{{ statusLabel(item.status) }}</span></td>
+              <td class="title">{{ item.title }}</td>
+              <td>{{ item.audience }}</td>
+              <td><time [attr.datetime]="item.publishedOn">{{ shownDate(item.publishedOn) }}</time></td>
+              <td>{{ reviewerLabel(item) }}</td>
+              <td class="actions">
+                @if (item.status === 'draft') {
+                  <button type="button" class="is-submit" (click)="$event.stopPropagation(); submitApplication(item.id)">送出</button>
+                  <button type="button" class="is-edit" (click)="$event.stopPropagation(); editApplication(item)">編輯</button>
+                  <button type="button" class="is-delete" (click)="$event.stopPropagation(); deleteApplication(item.id)">刪除</button>
+                } @else if (item.status === 'pending') {
+                  <button type="button" class="is-recall" (click)="$event.stopPropagation(); recallApplication(item.id)">回收</button>
+                } @else if (item.status === 'rejected') {
+                  <button type="button" class="is-edit" (click)="$event.stopPropagation(); editApplication(item)">編輯</button>
+                  <button type="button" class="is-delete" (click)="$event.stopPropagation(); deleteApplication(item.id)">刪除</button>
+                } @else {
+                  —
+                }
+              </td>
+            </tr>
+            @if (openedApplicationId() === item.id) {
+              <tr class="inline-detail" [class.is-even]="isEven" [class.is-odd]="!isEven">
+                <td colspan="9">
+                  <h3>內文</h3>
+                  <p class="inline-detail__body">{{ item.body }}</p>
+                  @if (item.attachments?.length) {
+                    <h3>附件</h3>
+                    <ul class="inline-detail__attachments">
+                      @for (attachment of item.attachments; track attachment.url) {
+                        <li><a [href]="attachment.url" [attr.download]="attachment.name">{{ attachment.name }}</a></li>
+                      }
+                    </ul>
+                  }
+                  <section class="inline-detail__result">
+                    <h3>處理結果</h3>
+                    <div class="inline-detail__result-content">
+                      <span class="status-tag" [attr.data-status]="item.status">{{ statusLabel(item.status) }}</span>
+                      @if (item.status === 'rejected') {
+                        <p>退回原因：{{ item.rejectReason }}</p>
+                        <button type="button" (click)="editApplication(item)">編輯申請</button>
+                      } @else if (item.status === 'approved') {
+                        <p>刊登時間：{{ shownDate(item.listedOn) }}</p>
+                        <a [routerLink]="'/' + kindPath(item.kind) + '/' + item.id">查看公告</a>
+                      } @else if (item.status === 'withdrawn') {
+                        <p>刊登 {{ shownDate(item.listedOn) }}／下架 {{ shownDate(item.withdrawnOn ?? '') }}</p>
+                      } @else {
+                        <p>已送出，等待審核。</p>
+                      }
+                    </div>
+                  </section>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr class="is-empty"><td colspan="9"><div class="empty"><p>目前沒有申請紀錄。</p></div></td></tr>
+          }
+        </tbody>
+      </table>
+  </div>
+}
+
+@if (success()) {
+  <app-toast [message]="success()" />
+}

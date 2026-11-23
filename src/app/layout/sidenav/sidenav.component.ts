@@ -1,8 +1,6 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { fallbackSide, loadCatalog, sideSections, SideSection } from '../navbar/nav-catalog';
-
-const SELF_REPO = 'noah-notice';
+import { CatalogService } from '../catalog.service';
 
 @Component({
   selector: 'app-sidenav',
@@ -12,14 +10,5 @@ const SELF_REPO = 'noah-notice';
   styleUrl: './sidenav.component.scss',
 })
 export class SidenavComponent {
-  sections: SideSection[] = [];
-
-  constructor() {
-    const controller = new AbortController();
-    inject(DestroyRef).onDestroy(() => controller.abort());
-    void loadCatalog(controller.signal).then((catalog) => {
-      const next = catalog ? sideSections(catalog, SELF_REPO) : [];
-      this.sections = next.length ? next : fallbackSide(SELF_REPO);
-    });
-  }
+  readonly sections = inject(CatalogService).sections;
 }

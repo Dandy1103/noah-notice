@@ -1,0 +1,131 @@
+@import '../styles/roster-head';
+@import '../styles/notice-list';
+
+:host {
+  display: block;
+}
+
+.notice-list table {
+  width: 100%;
+  min-width: 1000px;
+}
+
+.col-no { width: 64px; }
+.col-org,
+.col-kind,
+.col-who { width: 112px; }
+.col-applicant { width: 128px; }
+.col-date { width: 160px; }
+.col-action { width: 96px; }
+
+.view-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.view-tabs button {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  color: #334155;
+  font: inherit;
+  cursor: pointer;
+}
+
+.view-tabs button.is-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notice-list td button {
+  height: 32px;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 4px;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.notice-list td button.is-view {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.notice-list td button.is-view:hover {
+  background: color-mix(in srgb, var(--color-primary) 88%, #000);
+}
+
+.notice-list td button:focus-visible {
+  outline: 2px solid #1f2937;
+  outline-offset: 2px;
+}
+
+.review-actions,
+.reject-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.reject-row input {
+  flex: 1;
+  min-width: 180px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.reject-row input[aria-invalid='true'] {
+  border-color: #dc2626;
+}
+
+.notice-list .inline-detail button {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 4px;
+}
+
+.notice-list .inline-detail button.is-agree {
+  background: #16a34a;
+  color: #fff;
+}
+
+.notice-list .inline-detail button.is-decline {
+  background: #dc2626;
+  color: #fff;
+}
+
+.notice-list .inline-detail button.is-back {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+}
+
+@media (max-width: 720px) {
+  .reject-row {
+    flex-wrap: wrap;
+  }
+
+  .reject-row input {
+    flex-basis: 100%;
+  }
+}

@@ -1,0 +1,84 @@
+@if (notice(); as item) {
+  <nav class="crumb" aria-label="麵包屑">
+    <ol>
+      <li><a [href]="portalHome">首頁</a></li>
+      <li><a [routerLink]="'/' + kindPath(item.kind)">{{ kindLabel(item.kind) }}</a></li>
+    </ol>
+  </nav>
+  <article class="sheet">
+    <h1>{{ item.title }}</h1>
+    <dl class="facts">
+      <div>
+        <dt>申請單位</dt>
+        <dd>{{ item.unit }}</dd>
+      </div>
+      <div>
+        <dt>刊登時間</dt>
+        <dd><time [attr.datetime]="item.listedOn">{{ shownDate(item.listedOn) }}</time></dd>
+      </div>
+      <div>
+        <dt>類型</dt>
+        <dd>{{ kindLabel(item.kind) }}</dd>
+      </div>
+      <div>
+        <dt>對象</dt>
+        <dd>{{ item.audience }}</dd>
+      </div>
+    </dl>
+    <p class="body">{{ item.body }}</p>
+    @if (item.attachments?.length) {
+      <section class="attachments">
+        <h2>附件</h2>
+        <ul>
+          @for (attachment of item.attachments; track attachment.url) {
+            <li><a [href]="attachment.url" [attr.download]="attachment.name">{{ attachment.name }}</a></li>
+          }
+        </ul>
+      </section>
+    }
+    <div class="sheet__foot">
+      <a class="back" [routerLink]="'/' + kindPath(item.kind)">回列表</a>
+      <div class="share">
+        <button type="button" [attr.aria-label]="copied() ? '已複製' : '複製連結'" [attr.title]="copied() ? '已複製' : '複製連結'" (click)="copyLink()">
+          @if (copied()) {
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12.5 9.5 17 19 7" />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="8" y="8" width="11" height="11" rx="2" />
+              <path d="M8 16H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" />
+            </svg>
+          }
+        </button>
+        <button type="button" aria-label="分享" title="分享" (click)="share()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="6" cy="12" r="2.2" />
+            <circle cx="17" cy="7" r="2.2" />
+            <circle cx="17" cy="17" r="2.2" />
+            <path d="m8 11 7-3M8 13l7 3" />
+          </svg>
+        </button>
+        <button type="button" aria-label="LINE 分享" title="LINE 分享">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="line-mark" d="M12 4.2c-4.5 0-8.2 2.9-8.2 6.5 0 3.2 2.8 5.9 6.6 6.4l.1 2.4c0 .3.3.4.5.2l2.8-1.9c4.2-.6 7.4-3.2 7.4-7.1 0-3.6-3.7-6.5-8.2-6.5z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </article>
+} @else {
+  <div class="roster-head">
+    <div class="roster-head__title">
+      <h1>公告</h1>
+    </div>
+    <nav class="crumb" aria-label="麵包屑">
+      <ol>
+        <li><a [href]="portalHome">首頁</a></li>
+        <li aria-current="page">公告</li>
+      </ol>
+    </nav>
+  </div>
+  <p class="missing">找不到這則公告。</p>
+  <a class="back" routerLink="/operations">回列表</a>
+}
