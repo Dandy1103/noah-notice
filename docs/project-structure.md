@@ -1,6 +1,6 @@
 # 專案結構
 
-應用程式在 `src/app`。`server/` 把 build 出來的靜態檔送出去。`core/` 還沒有。
+應用程式在 `src/app`。`server/` 提供 Angular 靜態檔，並將公告 API 和登入請求轉給 `noah-core`。
 
 ```
 src/

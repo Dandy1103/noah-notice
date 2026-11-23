@@ -1,5 +1,5 @@
+import { NoahPageHeadingComponent, NoahInputDirective } from '@dandy1103/ui';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { AccountService } from '../../layout/account.service';
 import { applicantLabel, kindLabel, matchesKeyword, NoticeItem, reviewerLabel, shownDate, statusLabel } from '../notices';
 import { NoticeStore } from '../notice-store';
 import { ToastComponent } from '../../shared/toast/toast.component';
@@ -9,13 +9,12 @@ const PAGE_SIZE = 10;
 @Component({
   selector: 'app-review',
   standalone: true,
-  imports: [ToastComponent],
+  imports: [NoahPageHeadingComponent, NoahInputDirective, ToastComponent],
   templateUrl: './review.component.html',
   styleUrl: './review.component.scss',
 })
 export class ReviewComponent {
   private readonly store = inject(NoticeStore);
-  private readonly account = inject(AccountService);
   private successTimer = 0;
   readonly kindLabel = kindLabel;
   readonly statusLabel = statusLabel;
@@ -30,6 +29,9 @@ export class ReviewComponent {
   readonly reason = signal('');
   readonly reasonError = signal(false);
   readonly success = signal('');
+  readonly saving = this.store.saving;
+  readonly account = this.store.account;
+  readonly actionError = this.store.actionError;
   readonly applications = computed(() => this.store.notices()
     .filter((item) => this.view() === 'pending'
       ? item.status === 'pending'
@@ -96,15 +98,15 @@ export class ReviewComponent {
     this.decline(id, reason);
   }
 
-  agree(id: string): void {
-    this.store.approve(id, this.account.name());
+  async agree(id: string): Promise<void> {
+    if (!await this.store.change(id, 'approve')) return;
     this.closeIfOpen(id);
     this.stayOnPage();
     this.showSuccess('審核完成');
   }
 
-  decline(id: string, reason: string): void {
-    this.store.reject(id, reason, this.account.name());
+  async decline(id: string, reason: string): Promise<void> {
+    if (!await this.store.change(id, 'reject', reason)) return;
     this.closeIfOpen(id);
     this.stayOnPage();
     this.showSuccess('退件完成');

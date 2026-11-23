@@ -2,6 +2,11 @@
   display: block;
 }
 
+:host:has(.login-dialog[open]) {
+  max-height: 100dvh;
+  overflow: clip;
+}
+
 app-header {
   position: sticky;
   top: 0;
@@ -34,6 +39,52 @@ app-navbar {
   flex: 1;
   min-width: 0;
   padding: 28px 32px 48px;
+}
+
+.login-dialog {
+  width: min(360px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  padding: 20px 8px 12px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 16%);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.login-dialog::backdrop {
+  background: rgb(15 23 42 / 45%);
+}
+
+.login-dialog h1 {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.login-action {
+  display: grid;
+  width: 120px;
+  height: 40px;
+  place-items: center;
+  margin: 20px auto 0;
+  border-radius: var(--radius-sm);
+  background: #285fb8;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-action:hover {
+  background: #204e99;
+}
+
+.login-action:focus-visible {
+  outline: 2px solid #285fb8;
+  outline-offset: 2px;
 }
 
 @media (max-width: 720px) {

@@ -1,3 +1,4 @@
+import { NoahPageHeadingComponent, NoahInputDirective } from '@dandy1103/ui';
 import { Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { kindLabel, matchesKeyword, matchesNoticeQuery, NoticeItem, shownDate, statusLabel, uniqueNames } from '../notices';
 import { NoticeStore } from '../notice-store';
@@ -9,7 +10,7 @@ const PAGE_SIZE = 10;
 @Component({
   selector: 'app-manage',
   standalone: true,
-  imports: [SelectComponent, ToastComponent],
+  imports: [NoahPageHeadingComponent, NoahInputDirective, SelectComponent, ToastComponent],
   templateUrl: './manage.component.html',
   styleUrl: './manage.component.scss',
 })
@@ -27,6 +28,9 @@ export class ManageComponent {
   });
   readonly opened = signal<NoticeItem | null>(null);
   readonly success = signal('');
+  readonly saving = this.store.saving;
+  readonly account = this.store.account;
+  readonly actionError = this.store.actionError;
   readonly audiencePick = signal('');
   readonly unitPick = signal('');
   readonly titlePick = signal('');
@@ -111,8 +115,8 @@ export class ManageComponent {
     if (this.pendingId()) this.cancelWithdraw();
   }
 
-  withdraw(id: string): void {
-    this.store.withdraw(id);
+  async withdraw(id: string): Promise<void> {
+    if (!await this.store.change(id, 'withdraw')) return;
     this.pendingId.set(null);
     this.showSuccess('下架成功');
   }

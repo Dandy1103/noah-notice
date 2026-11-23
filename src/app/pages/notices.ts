@@ -26,6 +26,8 @@ export interface NoticeItem {
   reviewedBy?: string;
   reviewedOn?: string;
   withdrawnOn?: string;
+  owned?: boolean;
+  onShelf?: boolean;
 }
 
 const KIND_PAGES: Record<NoticeKind, { path: string; label: string }> = {
@@ -516,12 +518,7 @@ export interface NoticeDraft {
   kind: NoticeKind;
   title: string;
   audience: string;
-  unit: string;
-  publishedOn: string;
-  listedOn: string;
-  endsOn: string;
   body: string;
-  attachments: NoticeAttachment[];
 }
 
 export function nextDocumentNo(unit: string, publishedOn: string, notices: NoticeItem[], ignoreId = ''): string {

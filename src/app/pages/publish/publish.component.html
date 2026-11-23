@@ -1,29 +1,9 @@
 @if (missing()) {
-  <div class="roster-head">
-    <div class="roster-head__title">
-      <h1>公告</h1>
-    </div>
-    <nav class="crumb" aria-label="麵包屑">
-      <ol>
-        <li><a [href]="portalHome">首頁</a></li>
-        <li><a routerLink="/manage">公告管理</a></li>
-      </ol>
-    </nav>
-  </div>
+  <noah-page-heading title="公告" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: '公告管理', route: '/manage' }]" />
   <p class="missing">找不到這則公告。</p>
   <a class="back" routerLink="/manage">回列表</a>
 } @else {
-  <div class="roster-head">
-    <div class="roster-head__title">
-      <h1>公告申請</h1>
-    </div>
-    <nav class="crumb" aria-label="麵包屑">
-      <ol>
-        <li><a [href]="portalHome">首頁</a></li>
-        <li aria-current="page">公告申請</li>
-      </ol>
-    </nav>
-  </div>
+  <noah-page-heading title="我的公告申請" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: '公告申請' }]" />
   @if (mode() === 'new') {
     <div class="application-scrim" (click)="show('mine')">
       <section
@@ -44,7 +24,7 @@
         <form class="sheet" (submit)="save($event)">
     <label class="field is-wide">
       <span>主旨</span>
-      <input [value]="title()" (input)="title.set(fieldValue($event))">
+      <input noahInput [value]="title()" (input)="title.set(fieldValue($event))">
     </label>
     <label class="field">
       <span>類型</span>
@@ -58,36 +38,11 @@
       <span>內文</span>
       <textarea [value]="body()" (input)="body.set(fieldValue($event))"></textarea>
     </label>
-    <div class="field is-wide">
-      <span>附件（選填）</span>
-      <input id="notice-attachments" class="file-input" type="file" multiple (change)="pickAttachments($event)">
-      <label class="upload-picker" for="notice-attachments">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
-        </svg>
-        <span class="upload-picker__text">
-          <strong>選擇附件</strong>
-          <small>可一次選擇多個檔案</small>
-        </span>
-      </label>
-      @if (attachments().length) {
-        <ul class="selected-files" aria-label="已選附件">
-          @for (attachment of attachments(); track attachment.url) {
-            <li>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7 3h7l4 4v14H7zM14 3v5h5" />
-              </svg>
-              <span>{{ attachment.name }}</span>
-            </li>
-          }
-        </ul>
-      }
-    </div>
-    @if (error()) {
-      <p class="error" role="alert">{{ error() }}</p>
+    @if (error() || actionError()) {
+      <p class="error" role="alert">{{ error() || actionError() }}</p>
     }
     <div class="submit">
-      <button type="submit">{{ editing() ? '儲存變更' : '儲存申請' }}</button>
+      <button type="submit" [disabled]="saving()">{{ editing() ? '儲存變更' : '儲存申請' }}</button>
       <button type="button" class="is-back" (click)="show('mine')">返回列表</button>
     </div>
         </form>
@@ -97,6 +52,9 @@
   <div class="application-actions">
     <button type="button" class="new-application" (click)="startNew()">新增申請</button>
   </div>
+  @if (actionError()) {
+    <p class="error" role="alert">{{ actionError() }}</p>
+  }
   <div class="notice-list application-list" [class.is-idle]="myApplications().length === 0">
       <table>
         <colgroup>

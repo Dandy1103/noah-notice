@@ -50,3 +50,16 @@
   color: var(--color-text-primary);
   font-weight: 600;
 }
+
+.roster-head > .crumb:first-child {
+  margin: 0 0 12px;
+
+  ol {
+    font-size: 14px;
+  }
+
+  [aria-current="page"] {
+    color: var(--color-text-secondary);
+    font-weight: 400;
+  }
+}

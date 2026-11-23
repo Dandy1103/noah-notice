@@ -1,14 +1,4 @@
-<div class="roster-head">
-  <div class="roster-head__title">
-    <h1>{{ title() }}</h1>
-  </div>
-  <nav class="crumb" aria-label="麵包屑">
-    <ol>
-      <li><a [href]="portalHome">首頁</a></li>
-      <li aria-current="page">{{ title() }}</li>
-    </ol>
-  </nav>
-</div>
+<noah-page-heading [title]="heading()" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: title() }]" />
 
 <form class="notice-query" (submit)="search($event)">
   <label>
@@ -21,7 +11,7 @@
   </label>
   <label>
     <span>主旨</span>
-    <input placeholder="輸入主旨" [value]="titlePick()" (input)="titlePick.set(fieldValue($event))">
+    <input noahInput placeholder="輸入主旨" [value]="titlePick()" (input)="titlePick.set(fieldValue($event))">
   </label>
   <div class="notice-query__actions">
     <button type="submit">搜尋</button>
@@ -30,7 +20,7 @@
 </form>
 
 <div class="notice-filter">
-  <input aria-label="篩選" placeholder="篩選關鍵字" [value]="filterText()" (input)="pickFilter($event)">
+  <input noahInput aria-label="篩選" placeholder="篩選關鍵字" [value]="filterText()" (input)="pickFilter($event)">
 </div>
 
 <div class="notice-list" [class.is-idle]="pageRows().length === 0">
@@ -107,4 +97,3 @@
       <button type="button" (click)="shiftPage(1)" [disabled]="page() === pageCount()">下一頁</button>
     </nav>
 </div>
-

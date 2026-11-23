@@ -1,25 +1,30 @@
+import { NoahPageHeadingComponent, NoahInputDirective } from '@dandy1103/ui';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
-import { isOnShelf, kindLabel, matchesKeyword, matchesNoticeQuery, NoticeItem, NoticeKind, shownDate, uniqueNames } from '../notices';
+import { kindLabel, matchesKeyword, matchesNoticeQuery, NoticeItem, NoticeKind, shownDate, uniqueNames } from '../notices';
 import { NoticeStore } from '../notice-store';
 import { SelectComponent, SelectOption } from '../../shared/select/select.component';
-import { AccountService } from '../../layout/account.service';
 
 const PAGE_SIZE = 10;
+const LIST_HEADINGS: Record<NoticeKind, string> = {
+  company: '營運公告一覽',
+  event: '活動公告一覽',
+  people: '人事公告一覽',
+  policy: '制度公告一覽',
+};
 
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [SelectComponent],
+  imports: [NoahPageHeadingComponent, NoahInputDirective, SelectComponent],
   templateUrl: './list.component.html',
   styleUrl: './list.component.scss',
 })
 export class ListComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly store = inject(NoticeStore);
-  private readonly account = inject(AccountService);
   readonly kindLabel = kindLabel;
   readonly shownDate = shownDate;
   readonly kind = toSignal(
@@ -36,9 +41,9 @@ export class ListComponent {
   readonly filterText = signal('');
   readonly opened = signal<NoticeItem | null>(null);
   readonly title = computed(() => kindLabel(this.kind()));
+  readonly heading = computed(() => LIST_HEADINGS[this.kind()]);
   readonly listed = computed(() => this.store.notices().filter((item) => {
-    const visibleToUser = item.audience === '全體同仁' || !this.account.unit() || item.audience === this.account.unit();
-    return item.status === 'approved' && item.kind === this.kind() && isOnShelf(item) && visibleToUser;
+    return item.onShelf && item.kind === this.kind();
   }));
   readonly audienceOptions = computed(() => uniqueNames(this.listed().map((item) => item.audience)));
   readonly unitOptions = computed(() => uniqueNames(this.listed().map((item) => item.unit)));

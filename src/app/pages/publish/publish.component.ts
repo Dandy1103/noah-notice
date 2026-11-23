@@ -1,8 +1,9 @@
+import { NoahPageHeadingComponent, NoahInputDirective } from '@dandy1103/ui';
 import { Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AccountService } from '../../layout/account.service';
-import { kindLabel, kindPath, nextDocumentNo, NOTICE_AUDIENCES, NOTICE_KIND_OPTIONS, NOTICE_UNITS, NoticeAttachment, NoticeItem, NoticeKind, reviewerLabel, shownDate, statusLabel, todayStamp } from '../notices';
+import { kindLabel, kindPath, NOTICE_AUDIENCES, NOTICE_KIND_OPTIONS, NOTICE_UNITS, NoticeItem, NoticeKind, reviewerLabel, shownDate, statusLabel, todayStamp } from '../notices';
 import { NoticeStore } from '../notice-store';
 import { SelectComponent, SelectOption } from '../../shared/select/select.component';
 import { ToastComponent } from '../../shared/toast/toast.component';
@@ -10,7 +11,7 @@ import { ToastComponent } from '../../shared/toast/toast.component';
 @Component({
   selector: 'app-publish',
   standalone: true,
-  imports: [RouterLink, SelectComponent, ToastComponent],
+  imports: [NoahPageHeadingComponent, NoahInputDirective, RouterLink, SelectComponent, ToastComponent],
   templateUrl: './publish.component.html',
   styleUrl: './publish.component.scss',
 })
@@ -35,20 +36,16 @@ export class PublishComponent {
   readonly endsOn = signal('');
   readonly serial = signal(0);
   readonly body = signal('');
-  readonly attachments = signal<NoticeAttachment[]>([]);
   readonly error = signal('');
   readonly success = signal('');
   private successTimer = 0;
   readonly openedApplicationId = signal<string | null>(null);
   private readonly noticeId = signal(this.route.snapshot.paramMap.get('id') ?? '');
   readonly editing = computed(() => this.noticeId() !== '');
-  readonly documentNo = computed(() => nextDocumentNo(this.unit(), this.appliedOn(), this.store.notices(), this.noticeId()));
   readonly applicantUnit = computed(() => this.account.unit() || this.unit());
-  readonly myApplications = computed(() => {
-    const name = this.account.name().trim();
-    if (!name) return this.store.notices().filter((item) => item.appliedBy === '目前使用者');
-    return this.store.notices().filter((item) => item.appliedBy === name);
-  });
+  readonly myApplications = computed(() => this.store.notices().filter((item) => item.owned));
+  readonly saving = this.store.saving;
+  readonly actionError = this.store.actionError;
   readonly missing = computed(() => this.editing() && !this.store.notices().some((item) => item.id === this.noticeId()));
   readonly portalHome = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
     ? 'http://localhost:4200/'
@@ -75,7 +72,6 @@ export class PublishComponent {
     this.endsOn.set(item?.endsOn ?? '');
     this.serial.set(item?.serial ?? 0);
     this.body.set(item?.body ?? '');
-    this.attachments.set(item?.attachments ?? []);
     this.error.set('');
   }
 
@@ -85,14 +81,6 @@ export class PublishComponent {
 
   setKind(value: string): void {
     this.kind.set(value as NoticeKind);
-  }
-
-  pickAttachments(event: Event): void {
-    const files = (event.target as HTMLInputElement).files;
-    this.attachments.set(files ? Array.from(files, (file) => ({
-      name: file.name,
-      url: URL.createObjectURL(file),
-    })) : []);
   }
 
   show(mode: 'new' | 'mine'): void {
@@ -129,58 +117,42 @@ export class PublishComponent {
     this.openedApplicationId.update((current) => current === id ? null : id);
   }
 
-  submitApplication(id: string): void {
-    this.store.submit(id);
+  async submitApplication(id: string): Promise<void> {
+    if (!await this.store.change(id, 'submit')) return;
     this.openedApplicationId.set(null);
     this.showSuccess('申請已送出');
   }
 
-  recallApplication(id: string): void {
-    this.store.recall(id);
+  async recallApplication(id: string): Promise<void> {
+    if (!await this.store.change(id, 'recall')) return;
     this.openedApplicationId.set(null);
     this.showSuccess('申請已回收');
   }
 
-  deleteApplication(id: string): void {
-    this.store.deleteApplication(id);
+  async deleteApplication(id: string): Promise<void> {
+    if (!await this.store.deleteApplication(id)) return;
     this.openedApplicationId.set(null);
     this.showSuccess('申請已刪除');
   }
 
-  save(event: Event): void {
+  async save(event: Event): Promise<void> {
     event.preventDefault();
     const draft = {
       kind: this.kind(),
       title: this.title().trim(),
       audience: this.audience().trim(),
-      unit: this.unit().trim(),
-      publishedOn: this.editing() ? this.publishedOn() : '',
-      listedOn: this.editing() ? this.listedOn() : '',
-      endsOn: '',
       body: this.body().trim(),
-      attachments: this.attachments(),
     };
-    draft.unit = this.applicantUnit().trim();
-    if (!draft.title || !draft.audience || !draft.unit || !draft.body) {
+    if (!draft.title || !draft.audience || !this.applicantUnit().trim() || !draft.body) {
       this.error.set('主旨、公告類型、公告對象與內文都要填。');
       return;
     }
-    const id = this.noticeId();
-    if (id) {
-      this.store.update(id, draft);
-      this.showSuccess('申請已儲存');
-      this.noticeId.set('');
-      this.mode.set('mine');
-      return;
-    }
-    this.store.add(draft, this.account.name() || '目前使用者');
+    this.error.set('');
+    if (!await this.store.save(draft, this.noticeId())) return;
+    this.noticeId.set('');
     this.showSuccess('申請已儲存');
     this.fill('');
     this.mode.set('mine');
   }
 
-  private appliedOn(): string {
-    if (this.noticeId()) return this.publishedOn();
-    return todayStamp();
-  }
 }
