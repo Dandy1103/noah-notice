@@ -1,6 +1,0 @@
-{
-  "/api/notices": { "target": "http://127.0.0.1:8080" },
-  "/api/apps": { "target": "http://127.0.0.1:8080" },
-  "/oauth2": { "target": "http://127.0.0.1:8080", "xfwd": true },
-  "/login": { "target": "http://127.0.0.1:8080", "xfwd": true }
-}

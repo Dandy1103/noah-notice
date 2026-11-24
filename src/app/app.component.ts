@@ -5,6 +5,7 @@ import { HeaderComponent } from './layout/header/header.component';
 import { NavbarComponent } from './layout/navbar/navbar.component';
 import { SidenavComponent } from './layout/sidenav/sidenav.component';
 import { loadCatalog } from './layout/navbar/nav-catalog';
+import { signedIn } from './require-session';
 import { NoticeStore } from './pages/notice-store';
 
 @Component({
@@ -31,7 +32,13 @@ export class AppComponent {
       sessionStorage.removeItem('noah-notice.returnPath');
       if (path?.startsWith('/') && !path.startsWith('//')) void this.router.navigateByUrl(path);
     });
-    void loadCatalog().finally(() => this.shellReady.set(true));
+    void this.open();
+  }
+
+  private async open(): Promise<void> {
+    if (!await signedIn()) return;
+    await loadCatalog().catch(() => null);
+    this.shellReady.set(true);
   }
 
   rememberPage(): void {
