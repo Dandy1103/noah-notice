@@ -1,11 +1,11 @@
 import { NoahLoadingMaskComponent } from '@dandy1103/ui';
-import { Component, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './layout/header/header.component';
 import { NavbarComponent } from './layout/navbar/navbar.component';
 import { SidenavComponent } from './layout/sidenav/sidenav.component';
 import { loadCatalog } from './layout/navbar/nav-catalog';
-import { signedIn } from './require-session';
+import { sendToLogin, signedIn } from './require-session';
 import { NoticeStore } from './pages/notice-store';
 
 @Component({
@@ -17,7 +17,6 @@ import { NoticeStore } from './pages/notice-store';
 })
 export class AppComponent {
   private readonly store = inject(NoticeStore);
-  private readonly router = inject(Router);
   readonly loadState = this.store.loadState;
   readonly shellReady = signal(false);
   @ViewChild('loginDialog')
@@ -26,12 +25,6 @@ export class AppComponent {
   }
 
   constructor() {
-    effect(() => {
-      if (this.loadState() !== 'ready') return;
-      const path = sessionStorage.getItem('noah-notice.returnPath');
-      sessionStorage.removeItem('noah-notice.returnPath');
-      if (path?.startsWith('/') && !path.startsWith('//')) void this.router.navigateByUrl(path);
-    });
     void this.open();
   }
 
@@ -41,8 +34,9 @@ export class AppComponent {
     this.shellReady.set(true);
   }
 
-  rememberPage(): void {
-    sessionStorage.setItem('noah-notice.returnPath', location.pathname + location.search + location.hash);
+  signInAgain(event: Event): void {
+    event.preventDefault();
+    sendToLogin();
   }
 
   retry(): void {

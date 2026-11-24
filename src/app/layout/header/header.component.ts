@@ -1,7 +1,6 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { NoahHeaderAction, NoahHeaderComponent } from '@dandy1103/ui';
 import { AccountService } from '../account.service';
-import { NoticeStore } from '../../pages/notice-store';
 import { loadCatalog, loadedCatalog, NavCatalog, portalEntry } from '../navbar/nav-catalog';
 
 @Component({
@@ -9,20 +8,14 @@ import { loadCatalog, loadedCatalog, NavCatalog, portalEntry } from '../navbar/n
   standalone: true,
   imports: [NoahHeaderComponent],
   template: `
-    <noah-header [homeHref]="homeHref" [actions]="actions" [userName]="userName()" (submitted)="signOut($event)"></noah-header>
-    @if (signOutError()) {
-      <p role="alert">公告登出失敗。請再試一次。</p>
-    }
+    <noah-header [homeHref]="homeHref" [actions]="actions" [userName]="userName()"></noah-header>
   `,
 })
 export class HeaderComponent {
   private readonly catalog = signal<NavCatalog | null>(loadedCatalog() ?? null);
   private readonly account = inject(AccountService);
-  private readonly store = inject(NoticeStore);
-  private signingOut = false;
 
   readonly userName = this.account.name;
-  readonly signOutError = signal(false);
 
   constructor() {
     const request = new AbortController();
@@ -35,28 +28,13 @@ export class HeaderComponent {
   }
 
   get actions(): NoahHeaderAction[] {
-    const home = this.homeHref;
-    const origin = home ? new URL(home, location.origin).origin + '/' : '';
+    const next = location.pathname + location.search;
+    const query = new URLSearchParams({ next }).toString();
     return [
       { label: '個人資料', href: portalEntry(this.catalog(), 'profile') },
       { label: '我的權限', href: portalEntry(this.catalog(), 'permissions') },
-      { label: '變更密碼', href: origin ? new URL('auth/change-password', origin).href : '' },
-      { label: '登出', href: origin ? new URL('auth/logout', origin).href : '', method: 'post' },
+      { label: '變更密碼', href: `/auth/change-password?${query}` },
+      { label: '登出', href: `/auth/logout?${query}`, method: 'post' },
     ];
-  }
-
-  async signOut(event: Event): Promise<void> {
-    const form = event.target;
-    if (!(form instanceof HTMLFormElement) || new URL(form.action).pathname !== '/auth/logout') return;
-    event.preventDefault();
-    if (this.signingOut) return;
-    this.signingOut = true;
-    this.signOutError.set(false);
-    if (await this.store.signOut()) {
-      form.submit();
-    } else {
-      this.signOutError.set(true);
-      this.signingOut = false;
-    }
   }
 }

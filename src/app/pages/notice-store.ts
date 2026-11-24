@@ -62,18 +62,6 @@ export class NoticeStore {
     return this.mutate('DELETE', id);
   }
 
-  async signOut(): Promise<boolean> {
-    try {
-      const response = await fetch('/api/notices/session/logout', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': this.csrfToken },
-      });
-      return response.status === 204;
-    } catch {
-      return false;
-    }
-  }
-
   private async mutate(method: string, id: string, action = '', payload?: NoticeDraft | { reason: string }): Promise<boolean> {
     if (this.saving()) return false;
     this.pending.set(true);

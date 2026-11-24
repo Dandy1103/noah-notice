@@ -16,7 +16,7 @@
             (cancel)="$event.preventDefault()"
           >
             <h1 id="login-title">登入逾時請重新登入</h1>
-            <a class="login-action" href="/oauth2/authorization/noah" (click)="rememberPage()" autofocus>重新登入</a>
+            <a class="login-action" href="/auth/login" (click)="signInAgain($event)" autofocus>重新登入</a>
           </dialog>
         }
         @case ('forbidden') { <p role="alert">你的帳號無法使用公告。請聯絡人資確認員工資料。</p> }
