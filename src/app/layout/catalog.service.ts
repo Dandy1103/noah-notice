@@ -1,5 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import type { NavCatalog } from '@dandy1103/ui';
+import { loadCatalog } from './navbar/nav-catalog';
 
 export interface SideLink {
   label: string;
@@ -24,29 +25,9 @@ export class CatalogService {
   }
 
   private async load(): Promise<void> {
-    try {
-      const response = await fetch(catalogUrl());
-      if (!response.ok) return;
-      const body: unknown = await response.json();
-      const catalog = readCatalog(body);
-      if (catalog) this.catalogState.set(catalog);
-    } catch {
-      return;
-    }
+    const catalog = await loadCatalog();
+    if (catalog) this.catalogState.set(catalog);
   }
-}
-
-function catalogUrl(): string {
-  const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
-  if (local) return 'http://localhost:3002/api/apps/catalog';
-  if (location.hostname === 'noah-platform.dandy-cheng.com') return new URL('/api/apps/catalog', location.origin).href;
-  return 'https://noah-platform.dandy-cheng.com/api/apps/catalog';
-}
-
-function readCatalog(body: unknown): NavCatalog | null {
-  if (!isRecord(body)) return null;
-  if (!Array.isArray(body['systems']) || !Array.isArray(body['groups'])) return null;
-  return { systems: body['systems'] as NavCatalog['systems'], groups: body['groups'] as NavCatalog['groups'] };
 }
 
 function sectionsForNotice(catalog: NavCatalog | null): SideSection[] {
@@ -67,6 +48,3 @@ function sectionsForNotice(catalog: NavCatalog | null): SideSection[] {
   return sections;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object';
-}
