@@ -10,7 +10,7 @@
   width: 100%;
   height: 100%;
   padding: 24px;
-  background: rgb(15 23 42 / 45%);
+  background: var(--color-overlay);
 }
 
 .panel {
@@ -20,8 +20,8 @@
   max-height: calc(100dvh - 48px);
   overflow: hidden;
   border-radius: 12px;
-  background: #f4f7fb;
-  box-shadow: 0 24px 48px rgb(15 23 42 / 24%);
+  background: var(--color-surface);
+  box-shadow: 0 24px 48px var(--color-shadow-strong);
 }
 
 .head {
@@ -33,7 +33,7 @@
   gap: 16px;
   padding: 20px 20px 16px;
   border-bottom: 3px solid var(--color-primary);
-  background: #fff;
+  background: var(--color-surface-raised);
 }
 
 .head__text {
@@ -62,7 +62,7 @@
   flex-wrap: wrap;
   gap: 8px 20px;
   margin: 10px 0 0;
-  color: #334155;
+  color: var(--color-text-primary);
   font-size: 14px;
   font-weight: 600;
 }
@@ -85,7 +85,7 @@
   border: 0;
   border-radius: 4px;
   background: transparent;
-  color: #001430;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
@@ -100,13 +100,13 @@
 }
 
 .close:hover {
-  background: #edf2f8;
+  background: var(--color-surface-selected);
 }
 
 .close:focus-visible,
 .decision button:focus-visible,
 .reason:focus-visible {
-  outline: 2px solid #0284c7;
+  outline: 2px solid var(--color-link);
   outline-offset: 2px;
 }
 
@@ -121,14 +121,14 @@
 
 .block {
   padding: 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-surface-raised);
 }
 
 .block h3 {
   margin: 0 0 12px;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -148,7 +148,7 @@
   min-width: 0;
   padding: 10px 12px;
   border-radius: 6px;
-  background: #f8fafc;
+  background: var(--color-surface-subtle);
 }
 
 .facts dt,
@@ -157,7 +157,7 @@
 }
 
 .facts dt {
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 600;
 }
@@ -179,27 +179,27 @@
 }
 
 .status-tag[data-status='pending'] {
-  border-color: #fcd34d;
-  background: #fef3c7;
-  color: #92400e;
+  border-color: var(--color-warning);
+  background: var(--color-warning-soft);
+  color: var(--color-warning-strong);
 }
 
 .status-tag[data-status='approved'] {
-  border-color: #86efac;
-  background: #dcfce7;
-  color: #166534;
+  border-color: var(--color-success-soft);
+  background: var(--color-success-soft);
+  color: var(--color-success-strong);
 }
 
 .status-tag[data-status='rejected'] {
-  border-color: #fca5a5;
-  background: #fee2e2;
-  color: #991b1b;
+  border-color: var(--color-danger-soft);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-strong);
 }
 
 .status-tag[data-status='withdrawn'] {
-  border-color: #cbd5e1;
-  background: #f1f5f9;
-  color: #475569;
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover);
+  color: var(--color-text-secondary);
 }
 
 .body {
@@ -218,9 +218,9 @@
   min-width: 0;
   height: 40px;
   padding: 0 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: #f8fafc;
+  background: var(--color-surface-subtle);
   color: var(--color-text-primary);
   font: inherit;
 }
@@ -231,8 +231,8 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 16px 20px;
-  border-top: 1px solid #e2e8f0;
-  background: #fff;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-raised);
 }
 
 .decision button {
@@ -241,7 +241,7 @@
   padding: 0 16px;
   border: 0;
   border-radius: 4px;
-  color: #fff;
+  color: var(--color-surface-raised);
   font: inherit;
   font-weight: 600;
   line-height: 1;
@@ -249,29 +249,29 @@
 }
 
 .decision .is-agree {
-  background: #16a34a;
+  background: var(--color-success);
 }
 
 .decision .is-agree:hover {
-  background: #15803d;
+  background: var(--color-success-strong);
 }
 
 .decision .is-decline {
-  background: #dc2626;
+  background: var(--color-danger);
 }
 
 .decision .is-decline:hover {
-  background: #b91c1c;
+  background: var(--color-danger-strong);
 }
 
 .decision .is-back {
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #001430;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
 }
 
 .decision .is-back:hover {
-  background: #edf2f8;
+  background: var(--color-surface-selected);
 }
 
 @media (max-width: 560px) {

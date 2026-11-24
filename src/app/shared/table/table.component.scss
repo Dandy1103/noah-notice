@@ -4,7 +4,7 @@ app-table {
 
 .data-table {
     overflow-x: auto;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--color-border-strong);
     border-radius: 8px;
     background: white;
 }
@@ -23,20 +23,20 @@ app-table {
 }
 
 .data-table th {
-    background: #fff;
-    color: #334155;
+    background: var(--color-surface-raised);
+    color: var(--color-text-primary);
     font-weight: 600;
     white-space: nowrap;
     border-bottom: 2px solid var(--color-primary);
 }
 
 .data-table td {
-    border-bottom: 1px solid #e2e8f0;
-    background: #fff;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
 }
 
 .data-table tbody tr:nth-child(even) td {
-    background: #e8eef4;
+    background: var(--color-surface-muted);
 }
 
 .data-table tbody tr:last-child td {

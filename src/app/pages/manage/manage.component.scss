@@ -29,7 +29,7 @@
 }
 
 .notice-list td button:focus-visible {
-  outline: 2px solid #0284c7;
+  outline: 2px solid var(--color-link);
   outline-offset: 2px;
 }
 
@@ -37,12 +37,12 @@
   min-width: 64px;
   padding: 0 12px;
   border-radius: 4px;
-  background: #dc2626;
-  color: #fff;
+  background: var(--color-danger);
+  color: var(--color-surface-raised);
 }
 
 .notice-list td button.is-withdraw:hover {
-  background: #b91c1c;
+  background: var(--color-danger-strong);
 }
 
 .confirm-scrim {
@@ -52,15 +52,15 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgb(15 23 42 / 45%);
+  background: var(--color-overlay);
 }
 
 .confirm-dialog {
   width: min(440px, 100%);
   padding: 24px;
   border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 20px 48px rgb(15 23 42 / 24%);
+  background: var(--color-surface-raised);
+  box-shadow: 0 20px 48px var(--color-shadow-strong);
 }
 
 .confirm-dialog h2 {
@@ -70,7 +70,7 @@
 
 .confirm-dialog p {
   margin: 12px 0 0;
-  color: #475569;
+  color: var(--color-text-secondary);
   line-height: 1.7;
 }
 
@@ -93,21 +93,21 @@
 }
 
 .confirm-actions .is-cancel {
-  border-color: #cbd5e1;
-  background: #fff;
-  color: #334155;
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
 }
 
 .confirm-actions .is-confirm {
-  background: #dc2626;
-  color: #fff;
+  background: var(--color-danger);
+  color: var(--color-surface-raised);
 }
 
 .confirm-actions .is-confirm:hover {
-  background: #b91c1c;
+  background: var(--color-danger-strong);
 }
 
 .confirm-actions button:focus-visible {
-  outline: 2px solid #0284c7;
+  outline: 2px solid var(--color-link);
   outline-offset: 2px;
 }

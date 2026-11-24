@@ -11,14 +11,14 @@ app-header {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: #fff;
+  background: var(--color-surface-raised);
 }
 
 app-navbar {
   position: sticky;
   top: var(--header-height);
   z-index: 30;
-  background: #fff;
+  background: var(--color-surface-raised);
 }
 
 .app {
@@ -48,14 +48,14 @@ app-navbar {
   padding: 20px 8px 12px 8px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 12px 32px rgb(15 23 42 / 16%);
+  background: var(--color-surface-raised);
+  box-shadow: 0 12px 32px var(--color-shadow);
   color: var(--color-text-primary);
   text-align: center;
 }
 
 .login-dialog::backdrop {
-  background: rgb(15 23 42 / 45%);
+  background: var(--color-overlay);
 }
 
 .login-dialog h1 {
@@ -71,19 +71,19 @@ app-navbar {
   place-items: center;
   margin: 20px auto 0;
   border-radius: var(--radius-sm);
-  background: #285fb8;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-surface-raised);
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .login-action:hover {
-  background: #204e99;
+  background: var(--color-primary-hover);
 }
 
 .login-action:focus-visible {
-  outline: 2px solid #285fb8;
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 

@@ -26,10 +26,10 @@
 .view-tabs button {
   height: 36px;
   padding: 0 16px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   border-radius: 4px;
-  background: #fff;
-  color: #334155;
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
   font: inherit;
   cursor: pointer;
 }
@@ -37,7 +37,7 @@
 .view-tabs button.is-active {
   border-color: var(--color-primary);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-surface-raised);
 }
 
 .actions {
@@ -52,7 +52,7 @@
   padding: 0 12px;
   border: 0;
   border-radius: 4px;
-  color: #fff;
+  color: var(--color-surface-raised);
   font: inherit;
   font-weight: 600;
   line-height: 1;
@@ -61,15 +61,15 @@
 
 .notice-list td button.is-view {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-surface-raised);
 }
 
 .notice-list td button.is-view:hover {
-  background: color-mix(in srgb, var(--color-primary) 88%, #000);
+  background: color-mix(in srgb, var(--color-primary) 88%, var(--color-text-primary));
 }
 
 .notice-list td button:focus-visible {
-  outline: 2px solid #1f2937;
+  outline: 2px solid var(--color-text-primary);
   outline-offset: 2px;
 }
 
@@ -86,15 +86,15 @@
   min-width: 180px;
   height: 40px;
   padding: 0 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   border-radius: 4px;
-  background: #fff;
+  background: var(--color-surface-raised);
   color: var(--color-text-primary);
   font: inherit;
 }
 
 .reject-row input[aria-invalid='true'] {
-  border-color: #dc2626;
+  border-color: var(--color-danger);
 }
 
 .notice-list .inline-detail button {
@@ -104,19 +104,19 @@
 }
 
 .notice-list .inline-detail button.is-agree {
-  background: #16a34a;
-  color: #fff;
+  background: var(--color-success);
+  color: var(--color-surface-raised);
 }
 
 .notice-list .inline-detail button.is-decline {
-  background: #dc2626;
-  color: #fff;
+  background: var(--color-danger);
+  color: var(--color-surface-raised);
 }
 
 .notice-list .inline-detail button.is-back {
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
 }
 
 @media (max-width: 720px) {
