@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import type { NavCatalog } from '@dandy1103/ui';
-import { loadCatalog } from './navbar/nav-catalog';
+import { loadCatalog, loadedCatalog } from './navbar/nav-catalog';
 
 export interface SideLink {
   label: string;
@@ -21,6 +21,11 @@ export class CatalogService {
   readonly sections = computed(() => sectionsForNotice(this.catalogState()));
 
   constructor() {
+    const current = loadedCatalog();
+    if (current !== undefined) {
+      this.catalogState.set(current);
+      return;
+    }
     void this.load();
   }
 
