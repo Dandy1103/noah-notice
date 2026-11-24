@@ -1,1 +1,3 @@
-<noah-sidebar [sections]="sections()" />
+@if (sections().length) {
+  <noah-sidebar [sections]="sections()" />
+}

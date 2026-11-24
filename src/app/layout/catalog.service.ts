@@ -13,26 +13,6 @@ export interface SideSection {
 
 const NOTICE_REPO = 'noah-notice';
 
-const FALLBACK_SECTIONS: SideSection[] = [
-  {
-    title: '公告',
-    links: [
-      { label: '營運公告', path: '/operations' },
-      { label: '活動', path: '/events' },
-      { label: '制度', path: '/policy' },
-      { label: '人事', path: '/people' },
-    ],
-  },
-  {
-    title: '管理',
-    links: [
-      { label: '公告管理', path: '/manage' },
-      { label: '申請處理', path: '/reviews' },
-      { label: '公告申請', path: '/publish' },
-    ],
-  },
-];
-
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
   private readonly catalogState = signal<NavCatalog | null>(null);
@@ -70,9 +50,9 @@ function readCatalog(body: unknown): NavCatalog | null {
 }
 
 function sectionsForNotice(catalog: NavCatalog | null): SideSection[] {
-  if (!catalog) return FALLBACK_SECTIONS;
+  if (!catalog) return [];
   const mine = catalog.groups.find((group) => group && group.app === NOTICE_REPO);
-  if (!mine || !Array.isArray(mine.sections)) return FALLBACK_SECTIONS;
+  if (!mine || !Array.isArray(mine.sections)) return [];
   const sections: SideSection[] = [];
   for (const section of mine.sections) {
     if (!section || typeof section.title !== 'string' || !Array.isArray(section.links)) continue;
@@ -80,24 +60,11 @@ function sectionsForNotice(catalog: NavCatalog | null): SideSection[] {
     for (const link of section.links) {
       if (!link || typeof link.label !== 'string') continue;
       const path = typeof link.path === 'string' ? link.path : '';
-      links.push({ label: link.label === '公告發布' ? '公告申請' : link.label, path: path ? `/${path}` : '/' });
+      links.push({ label: link.label, path: path ? `/${path}` : '/' });
     }
     if (links.length) sections.push({ title: section.title, links });
   }
-  return withReviewLink(sections.length ? sections : FALLBACK_SECTIONS);
-}
-
-const REVIEW_LINK: SideLink = { label: '申請處理', path: '/reviews' };
-
-function withReviewLink(sections: SideSection[]): SideSection[] {
-  const listed = sections.some((section) => section.links.some((link) => link.path === REVIEW_LINK.path));
-  if (listed) return sections;
-  const manageIndex = sections.findIndex((section) => section.links.some((link) => link.path === '/manage'));
-  if (manageIndex < 0) return [...sections, { title: '管理', links: [REVIEW_LINK] }];
-  return sections.map((section, index) => {
-    if (index !== manageIndex) return section;
-    return { ...section, links: [...section.links, REVIEW_LINK] };
-  });
+  return sections;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

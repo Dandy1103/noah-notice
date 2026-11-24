@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { NoahNavbarComponent } from '@dandy1103/ui';
-import { applyNav, fallbackGroups } from './nav-catalog';
+import { applyNav } from './nav-catalog';
 import { CatalogService } from '../catalog.service';
 
 const repo = 'noah-notice';
@@ -9,7 +9,7 @@ const repo = 'noah-notice';
   selector: 'app-navbar',
   standalone: true,
   imports: [NoahNavbarComponent],
-  template: "<noah-navbar [groups]=\"groups()\" [currentLabel]=\"currentLabel()\" />",
+  template: `@if (groups(); as groups) { <noah-navbar [groups]="groups" [currentLabel]="currentLabel()" /> }`,
 })
 export class NavbarComponent {
   private readonly catalogs = inject(CatalogService);
@@ -17,7 +17,7 @@ export class NavbarComponent {
 
   readonly groups = computed(() => {
     const catalog = this.catalog();
-    return catalog ? applyNav(catalog, repo) : fallbackGroups(repo);
+    return catalog ? applyNav(catalog, repo) : null;
   });
 
   readonly currentLabel = computed(() => {
