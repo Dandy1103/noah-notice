@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { NoahHeaderAction, NoahHeaderComponent } from '@dandy1103/ui';
 import { AccountService } from '../account.service';
 import { NoticeStore } from '../../pages/notice-store';
+import { loadCatalog, NavCatalog, portalEntry } from '../navbar/nav-catalog';
 
 @Component({
   selector: 'app-header',
@@ -15,21 +16,34 @@ import { NoticeStore } from '../../pages/notice-store';
   `,
 })
 export class HeaderComponent {
-  readonly homeHref = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
-    ? 'http://localhost:4200/'
-    : 'https://noahportal.dandy-cheng.com/';
-  readonly actions: NoahHeaderAction[] = [
-    { label: '個人資料', href: new URL('profile', this.homeHref).href },
-    { label: '我的權限', href: new URL('permissions', this.homeHref).href },
-    { label: '變更密碼', href: new URL('auth/change-password', this.homeHref).href },
-    { label: '登出', href: new URL('auth/logout', this.homeHref).href, method: 'post' },
-  ];
+  private readonly catalog = signal<NavCatalog | null>(null);
   private readonly account = inject(AccountService);
   private readonly store = inject(NoticeStore);
   private signingOut = false;
 
   readonly userName = this.account.name;
   readonly signOutError = signal(false);
+
+  constructor() {
+    const request = new AbortController();
+    inject(DestroyRef).onDestroy(() => request.abort());
+    void loadCatalog(request.signal).then((value) => this.catalog.set(value));
+  }
+
+  get homeHref(): string {
+    return portalEntry(this.catalog());
+  }
+
+  get actions(): NoahHeaderAction[] {
+    const home = this.homeHref;
+    const origin = home ? new URL(home, location.origin).origin + '/' : '';
+    return [
+      { label: '個人資料', href: portalEntry(this.catalog(), 'profile') },
+      { label: '我的權限', href: portalEntry(this.catalog(), 'permissions') },
+      { label: '變更密碼', href: origin ? new URL('auth/change-password', origin).href : '' },
+      { label: '登出', href: origin ? new URL('auth/logout', origin).href : '', method: 'post' },
+    ];
+  }
 
   async signOut(event: Event): Promise<void> {
     const form = event.target;

@@ -1,6 +1,8 @@
 import { NoahPageHeadingComponent, NoahInputDirective } from '@dandy1103/ui';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { applicantLabel, kindLabel, matchesKeyword, NoticeItem, reviewerLabel, shownDate, statusLabel } from '../notices';
+import { CatalogService } from '../../layout/catalog.service';
+import { portalEntry } from '../../layout/navbar/nav-catalog';
 import { NoticeStore } from '../notice-store';
 import { ToastComponent } from '../../shared/toast/toast.component';
 
@@ -46,9 +48,11 @@ export class ReviewComponent {
     return this.notices().slice(start, start + PAGE_SIZE);
   });
   readonly blankRows = computed(() => Array.from({ length: PAGE_SIZE - this.pageRows().length }, (_, index) => index));
-  readonly portalHome = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
-    ? 'http://localhost:4200/'
-    : 'https://noahportal.dandy-cheng.com/';
+  private readonly catalogs = inject(CatalogService);
+
+  get portalHome(): string {
+    return portalEntry(this.catalogs.catalog());
+  }
 
   constructor() {
     inject(DestroyRef).onDestroy(() => window.clearTimeout(this.successTimer));

@@ -3,6 +3,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { kindLabel, kindPath, shownDate } from '../notices';
+import { CatalogService } from '../../layout/catalog.service';
+import { portalEntry } from '../../layout/navbar/nav-catalog';
 import { NoticeStore } from '../notice-store';
 
 @Component({
@@ -28,9 +30,11 @@ export class DetailComponent {
   readonly kindPath = kindPath;
   readonly shownDate = shownDate;
   readonly copied = signal(false);
-  readonly portalHome = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
-    ? 'http://localhost:4200/'
-    : 'https://noahportal.dandy-cheng.com/';
+  private readonly catalogs = inject(CatalogService);
+
+  get portalHome(): string {
+    return portalEntry(this.catalogs.catalog());
+  }
 
   constructor() {
     inject(DestroyRef).onDestroy(() => window.clearTimeout(this.copiedTimer));
