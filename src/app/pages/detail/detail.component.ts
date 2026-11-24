@@ -3,8 +3,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { kindLabel, kindPath, shownDate } from '../notices';
-import { CatalogService } from '../../layout/catalog.service';
-import { portalEntry } from '../../layout/navbar/nav-catalog';
 import { NoticeStore } from '../notice-store';
 
 @Component({
@@ -30,10 +28,8 @@ export class DetailComponent {
   readonly kindPath = kindPath;
   readonly shownDate = shownDate;
   readonly copied = signal(false);
-  private readonly catalogs = inject(CatalogService);
-
   get portalHome(): string {
-    return portalEntry(this.catalogs.catalog());
+    return '/portal';
   }
 
   constructor() {

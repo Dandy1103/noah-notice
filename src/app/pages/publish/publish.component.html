@@ -1,7 +1,7 @@
 @if (missing()) {
-  <noah-page-heading title="公告" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: '公告管理', route: '/manage' }]" />
+  <noah-page-heading title="公告" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: '公告管理', route: '/notice/manage' }]" />
   <p class="missing">找不到這則公告。</p>
-  <a class="back" routerLink="/manage">回列表</a>
+  <a class="back" routerLink="/notice/manage">回列表</a>
 } @else {
   <noah-page-heading title="我的公告申請" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: '公告申請' }]" />
   @if (mode() === 'new') {

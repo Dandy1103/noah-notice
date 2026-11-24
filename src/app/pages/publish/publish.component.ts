@@ -4,8 +4,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AccountService } from '../../layout/account.service';
 import { kindLabel, kindPath, NOTICE_AUDIENCES, NOTICE_KIND_OPTIONS, NOTICE_UNITS, NoticeItem, NoticeKind, reviewerLabel, shownDate, statusLabel, todayStamp } from '../notices';
-import { CatalogService } from '../../layout/catalog.service';
-import { portalEntry } from '../../layout/navbar/nav-catalog';
 import { NoticeStore } from '../notice-store';
 import { SelectComponent, SelectOption } from '../../shared/select/select.component';
 import { ToastComponent } from '../../shared/toast/toast.component';
@@ -49,10 +47,8 @@ export class PublishComponent {
   readonly saving = this.store.saving;
   readonly actionError = this.store.actionError;
   readonly missing = computed(() => this.editing() && !this.store.notices().some((item) => item.id === this.noticeId()));
-  private readonly catalogs = inject(CatalogService);
-
   get portalHome(): string {
-    return portalEntry(this.catalogs.catalog());
+    return '/portal';
   }
 
   constructor() {

@@ -4,8 +4,6 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { kindLabel, matchesKeyword, matchesNoticeQuery, NoticeItem, NoticeKind, shownDate, uniqueNames } from '../notices';
-import { CatalogService } from '../../layout/catalog.service';
-import { portalEntry } from '../../layout/navbar/nav-catalog';
 import { NoticeStore } from '../notice-store';
 import { SelectComponent, SelectOption } from '../../shared/select/select.component';
 
@@ -67,10 +65,8 @@ export class ListComponent {
     return this.notices().slice(start, start + PAGE_SIZE);
   });
   readonly blankRows = computed(() => Array.from({ length: PAGE_SIZE - this.pageRows().length }, (_, index) => index));
-  private readonly catalogs = inject(CatalogService);
-
   get portalHome(): string {
-    return portalEntry(this.catalogs.catalog());
+    return '/portal';
   }
 
   constructor() {
