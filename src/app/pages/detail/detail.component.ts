@@ -1,3 +1,4 @@
+import { NoahPageHeadingComponent } from '@dandy1103/ui';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -8,7 +9,7 @@ import { NoticeStore } from '../notice-store';
 @Component({
   selector: 'app-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, NoahPageHeadingComponent],
   templateUrl: './detail.component.html',
   styleUrl: './detail.component.scss',
 })

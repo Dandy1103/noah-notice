@@ -68,17 +68,7 @@
     </div>
   </article>
 } @else {
-  <div class="roster-head">
-    <div class="roster-head__title">
-      <h1>公告</h1>
-    </div>
-    <nav class="crumb" aria-label="麵包屑">
-      <ol>
-        <li><a [href]="portalHome">首頁</a></li>
-        <li aria-current="page">公告</li>
-      </ol>
-    </nav>
-  </div>
+  <noah-page-heading title="公告" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: '公告' }]" />
   <p class="missing">找不到這則公告。</p>
   <a class="back" routerLink="/notice/operations">回列表</a>
 }
