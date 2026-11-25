@@ -28,13 +28,14 @@ export class NoticeStore {
     inject(DestroyRef).onDestroy(() => this.abortController.abort());
   }
 
-  async load(): Promise<void> {
+  async load(view?: 'manage' | 'reviews'): Promise<boolean> {
     this.state.set('loading');
     try {
-      const response = await fetch('/api/notices', { cache: 'no-store' });
+      const query = view ? `?view=${encodeURIComponent(view)}` : '';
+      const response = await fetch(`/api/notices${query}`, { cache: 'no-store' });
       if (response.status === 401 || response.status === 403) {
         this.state.set(response.status === 401 ? 'login' : 'forbidden');
-        return;
+        return false;
       }
       if (!response.ok) throw new Error();
       const snapshot = await response.json() as { notices: NoticeItem[]; employee: Employee; csrfToken: string };
@@ -42,9 +43,11 @@ export class NoticeStore {
       this.employee.set(snapshot.employee);
       this.csrfToken = snapshot.csrfToken;
       this.state.set('ready');
+      return true;
     } catch {
       this.state.set('error');
       this.toast.showError('公告載入失敗', '請重新整理後再試一次。');
+      return false;
     }
   }
 

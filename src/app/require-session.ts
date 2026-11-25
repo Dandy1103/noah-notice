@@ -35,3 +35,11 @@ export const requireSession: CanActivateFn = () => {
 export async function signedIn(): Promise<boolean> {
   return checkSession();
 }
+
+
+export function requireAnnouncementManagement(view: 'manage' | 'reviews'): CanActivateFn {
+  return () => {
+    const store = inject(NoticeStore);
+    return store.loading.run(() => store.load(view));
+  };
+}

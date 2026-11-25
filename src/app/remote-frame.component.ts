@@ -17,7 +17,7 @@ import { sendToLogin } from './require-session';
           <a class="login-action" href="/auth/login" (click)="signInAgain($event)" autofocus>重新登入</a>
         </dialog>
       }
-      @case ('forbidden') { <p role="alert">你的帳號無法使用公告。請聯絡人資確認員工資料。</p> }
+      @case ('forbidden') { <p role="alert">你沒有權限查看此公告管理頁面。</p> }
       @case ('error') {
         <p role="alert">公告載入失敗。</p>
         <button type="button" (click)="retry()">重新載入</button>

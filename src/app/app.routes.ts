@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { requireSession } from './require-session';
+import { requireAnnouncementManagement, requireSession } from './require-session';
 import { DetailComponent } from './pages/detail/detail.component';
 import { ListComponent } from './pages/list/list.component';
 import { ManageComponent } from './pages/manage/manage.component';
@@ -17,8 +17,8 @@ export const routes: Routes = [
   { path: 'people/:id', component: DetailComponent },
   { path: 'policy', component: ListComponent, data: { kind: 'policy' } },
   { path: 'policy/:id', component: DetailComponent },
-  { path: 'reviews', component: ReviewComponent },
-  { path: 'manage', component: ManageComponent },
+  { path: 'reviews', canActivate: [requireAnnouncementManagement('reviews')], component: ReviewComponent },
+  { path: 'manage', canActivate: [requireAnnouncementManagement('manage')], component: ManageComponent },
   { path: 'publish', component: PublishComponent },
   { path: 'notice', pathMatch: 'full', redirectTo: 'operations' },
   { path: 'notice/:id', component: DetailComponent },
