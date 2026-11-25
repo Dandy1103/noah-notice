@@ -41,6 +41,6 @@ export class RemoteFrameComponent {
   }
 
   retry(): void {
-    void this.store.load();
+    void this.store.loading.run(() => this.store.load());
   }
 }

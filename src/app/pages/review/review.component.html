@@ -10,9 +10,6 @@
     <input noahInput aria-label="篩選" placeholder="篩選關鍵字" [value]="filterText()" (input)="pickFilter($event)">
   </div>
 
-  @if (actionError()) {
-    <p class="request-error" role="alert">{{ actionError() }}</p>
-  }
   <div class="notice-list" [class.is-idle]="pageRows().length === 0">
     <table>
       <colgroup>
@@ -134,9 +131,6 @@
     </nav>
   </div>
 
-  @if (success()) {
-    <app-toast [message]="success()" />
-  }
 } @else {
   <p role="alert">你沒有公告管理權限。請聯絡公告管理員。</p>
 }

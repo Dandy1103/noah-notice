@@ -1,21 +1,21 @@
 import { NoahPageHeadingComponent, NoahInputDirective } from '@dandy1103/ui';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { ToastService } from '@dandy1103/common';
 import { applicantLabel, kindLabel, matchesKeyword, NoticeItem, reviewerLabel, shownDate, statusLabel } from '../notices';
 import { NoticeStore } from '../notice-store';
-import { ToastComponent } from '../../shared/toast/toast.component';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-review',
   standalone: true,
-  imports: [NoahPageHeadingComponent, NoahInputDirective, ToastComponent],
+  imports: [NoahPageHeadingComponent, NoahInputDirective],
   templateUrl: './review.component.html',
   styleUrl: './review.component.scss',
 })
 export class ReviewComponent {
   private readonly store = inject(NoticeStore);
-  private successTimer = 0;
+  private readonly toast = inject(ToastService);
   readonly kindLabel = kindLabel;
   readonly statusLabel = statusLabel;
   readonly applicantLabel = applicantLabel;
@@ -28,10 +28,8 @@ export class ReviewComponent {
   readonly rejectingId = signal<string | null>(null);
   readonly reason = signal('');
   readonly reasonError = signal(false);
-  readonly success = signal('');
   readonly saving = this.store.saving;
   readonly account = this.store.account;
-  readonly actionError = this.store.actionError;
   readonly applications = computed(() => this.store.notices()
     .filter((item) => this.view() === 'pending'
       ? item.status === 'pending'
@@ -48,10 +46,6 @@ export class ReviewComponent {
   readonly blankRows = computed(() => Array.from({ length: PAGE_SIZE - this.pageRows().length }, (_, index) => index));
   get portalHome(): string {
     return '/portal';
-  }
-
-  constructor() {
-    inject(DestroyRef).onDestroy(() => window.clearTimeout(this.successTimer));
   }
 
   fieldValue(event: Event): string {
@@ -102,20 +96,14 @@ export class ReviewComponent {
     if (!await this.store.change(id, 'approve')) return;
     this.closeIfOpen(id);
     this.stayOnPage();
-    this.showSuccess('審核完成');
+    this.toast.showSuccess('審核完成');
   }
 
   async decline(id: string, reason: string): Promise<void> {
     if (!await this.store.change(id, 'reject', reason)) return;
     this.closeIfOpen(id);
     this.stayOnPage();
-    this.showSuccess('退件完成');
-  }
-
-  private showSuccess(message: string): void {
-    this.success.set(message);
-    window.clearTimeout(this.successTimer);
-    this.successTimer = window.setTimeout(() => this.success.set(''), 4000);
+    this.toast.showSuccess('退件完成');
   }
 
   goPage(page: number): void {

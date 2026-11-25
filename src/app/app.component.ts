@@ -1,13 +1,13 @@
 import { Component, signal } from '@angular/core';
-import { NoahLoadingMaskComponent } from '@dandy1103/ui';
 import { RouterOutlet } from '@angular/router';
 import { signedIn } from './require-session';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NoahLoadingMaskComponent],
+  imports: [RouterOutlet],
   templateUrl: './app.component.html',
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   readonly shellReady = signal(false);
@@ -17,7 +17,6 @@ export class AppComponent {
   }
 
   private async open(): Promise<void> {
-    if (!await signedIn()) return;
-    this.shellReady.set(true);
+    if (await signedIn()) this.shellReady.set(true);
   }
 }

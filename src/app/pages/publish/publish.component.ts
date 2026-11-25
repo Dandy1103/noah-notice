@@ -1,17 +1,17 @@
 import { NoahPageHeadingComponent, NoahInputDirective } from '@dandy1103/ui';
-import { Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
+import { ToastService } from '@dandy1103/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AccountService } from '../../layout/account.service';
 import { kindLabel, kindPath, NOTICE_AUDIENCES, NOTICE_KIND_OPTIONS, NOTICE_UNITS, NoticeItem, NoticeKind, reviewerLabel, shownDate, statusLabel, todayStamp } from '../notices';
 import { NoticeStore } from '../notice-store';
 import { SelectComponent, SelectOption } from '../../shared/select/select.component';
-import { ToastComponent } from '../../shared/toast/toast.component';
 
 @Component({
   selector: 'app-publish',
   standalone: true,
-  imports: [NoahPageHeadingComponent, NoahInputDirective, RouterLink, SelectComponent, ToastComponent],
+  imports: [NoahPageHeadingComponent, NoahInputDirective, RouterLink, SelectComponent],
   templateUrl: './publish.component.html',
   styleUrl: './publish.component.scss',
 })
@@ -19,6 +19,7 @@ export class PublishComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly store = inject(NoticeStore);
   private readonly account = inject(AccountService);
+  private readonly toast = inject(ToastService);
   readonly kindOptions: SelectOption[] = NOTICE_KIND_OPTIONS.map((option) => ({ value: option.id, label: option.label }));
   readonly audienceOptions: SelectOption[] = NOTICE_AUDIENCES.map((name) => ({ value: name, label: name }));
   readonly mode = signal<'new' | 'mine'>('mine');
@@ -37,22 +38,18 @@ export class PublishComponent {
   readonly serial = signal(0);
   readonly body = signal('');
   readonly error = signal('');
-  readonly success = signal('');
-  private successTimer = 0;
   readonly openedApplicationId = signal<string | null>(null);
   private readonly noticeId = signal(this.route.snapshot.paramMap.get('id') ?? '');
   readonly editing = computed(() => this.noticeId() !== '');
   readonly applicantUnit = computed(() => this.account.unit() || this.unit());
   readonly myApplications = computed(() => this.store.notices().filter((item) => item.owned));
   readonly saving = this.store.saving;
-  readonly actionError = this.store.actionError;
   readonly missing = computed(() => this.editing() && !this.store.notices().some((item) => item.id === this.noticeId()));
   get portalHome(): string {
     return '/portal';
   }
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => window.clearTimeout(this.successTimer));
     this.fill(this.noticeId());
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const id = params.get('id') ?? '';
@@ -96,14 +93,7 @@ export class PublishComponent {
   startNew(): void {
     this.noticeId.set('');
     this.fill('');
-    this.success.set('');
     this.mode.set('new');
-  }
-
-  private showSuccess(message: string): void {
-    this.success.set(message);
-    window.clearTimeout(this.successTimer);
-    this.successTimer = window.setTimeout(() => this.success.set(''), 4000);
   }
 
   editApplication(item: NoticeItem): void {
@@ -120,19 +110,19 @@ export class PublishComponent {
   async submitApplication(id: string): Promise<void> {
     if (!await this.store.change(id, 'submit')) return;
     this.openedApplicationId.set(null);
-    this.showSuccess('申請已送出');
+    this.toast.showSuccess('申請已送出');
   }
 
   async recallApplication(id: string): Promise<void> {
     if (!await this.store.change(id, 'recall')) return;
     this.openedApplicationId.set(null);
-    this.showSuccess('申請已回收');
+    this.toast.showSuccess('申請已回收');
   }
 
   async deleteApplication(id: string): Promise<void> {
     if (!await this.store.deleteApplication(id)) return;
     this.openedApplicationId.set(null);
-    this.showSuccess('申請已刪除');
+    this.toast.showSuccess('申請已刪除');
   }
 
   async save(event: Event): Promise<void> {
@@ -150,7 +140,7 @@ export class PublishComponent {
     this.error.set('');
     if (!await this.store.save(draft, this.noticeId())) return;
     this.noticeId.set('');
-    this.showSuccess('申請已儲存');
+    this.toast.showSuccess('申請已儲存');
     this.fill('');
     this.mode.set('mine');
   }

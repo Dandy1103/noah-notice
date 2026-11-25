@@ -1,22 +1,22 @@
 import { NoahPageHeadingComponent, NoahInputDirective } from '@dandy1103/ui';
-import { Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
+import { ToastService } from '@dandy1103/common';
 import { kindLabel, matchesKeyword, matchesNoticeQuery, NoticeItem, shownDate, statusLabel, uniqueNames } from '../notices';
 import { NoticeStore } from '../notice-store';
 import { SelectComponent, SelectOption } from '../../shared/select/select.component';
-import { ToastComponent } from '../../shared/toast/toast.component';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-manage',
   standalone: true,
-  imports: [NoahPageHeadingComponent, NoahInputDirective, SelectComponent, ToastComponent],
+  imports: [NoahPageHeadingComponent, NoahInputDirective, SelectComponent],
   templateUrl: './manage.component.html',
   styleUrl: './manage.component.scss',
 })
 export class ManageComponent {
   private readonly store = inject(NoticeStore);
-  private successTimer = 0;
+  private readonly toast = inject(ToastService);
   readonly kindLabel = kindLabel;
   readonly statusLabel = statusLabel;
   readonly shownDate = shownDate;
@@ -27,10 +27,8 @@ export class ManageComponent {
     return id ? this.store.find(id) : undefined;
   });
   readonly opened = signal<NoticeItem | null>(null);
-  readonly success = signal('');
   readonly saving = this.store.saving;
   readonly account = this.store.account;
-  readonly actionError = this.store.actionError;
   readonly audiencePick = signal('');
   readonly unitPick = signal('');
   readonly titlePick = signal('');
@@ -61,10 +59,6 @@ export class ManageComponent {
   readonly blankRows = computed(() => Array.from({ length: PAGE_SIZE - this.pageRows().length }, (_, index) => index));
   get portalHome(): string {
     return '/portal';
-  }
-
-  constructor() {
-    inject(DestroyRef).onDestroy(() => window.clearTimeout(this.successTimer));
   }
 
   fieldValue(event: Event): string {
@@ -118,13 +112,7 @@ export class ManageComponent {
   async withdraw(id: string): Promise<void> {
     if (!await this.store.change(id, 'withdraw')) return;
     this.pendingId.set(null);
-    this.showSuccess('下架成功');
-  }
-
-  private showSuccess(message: string): void {
-    this.success.set(message);
-    window.clearTimeout(this.successTimer);
-    this.successTimer = window.setTimeout(() => this.success.set(''), 4000);
+    this.toast.showSuccess('下架成功');
   }
 
   goPage(page: number): void {

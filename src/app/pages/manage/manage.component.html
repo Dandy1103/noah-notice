@@ -128,9 +128,6 @@
         (click)="$event.stopPropagation()">
         <h2 id="withdraw-dialog-title">確認下架公告？</h2>
         <p id="withdraw-dialog-description">「{{ item.title }}」下架後，員工將無法再從公告列表與詳情查看。</p>
-        @if (actionError()) {
-          <p class="request-error" role="alert">{{ actionError() }}</p>
-        }
         <div class="confirm-actions">
           <button type="button" class="is-confirm" [disabled]="saving()" (click)="withdraw(item.id)">確定</button>
           <button type="button" class="is-cancel" autofocus (click)="cancelWithdraw()">取消</button>
@@ -139,9 +136,6 @@
     </div>
   }
 
-  @if (success()) {
-    <app-toast [message]="success()" />
-  }
 } @else {
   <p role="alert">你沒有公告管理權限。請聯絡公告管理員。</p>
 }

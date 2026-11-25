@@ -1,21 +1,37 @@
+import { inject } from '@angular/core';
 import { CanActivateFn } from '@angular/router';
+import { NoticeStore } from './pages/notice-store';
+
+let sessionCheck: Promise<boolean> | undefined;
 
 export function sendToLogin(): void {
   const next = location.pathname + location.search;
   location.replace('/auth/login?' + new URLSearchParams({ next }));
 }
 
+function checkSession(): Promise<boolean> {
+  sessionCheck ??= fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
+    .then((response) => {
+      if (response.ok) return true;
+      if (response.status === 401) sendToLogin();
+      return false;
+    })
+    .catch(() => {
+      sendToLogin();
+      return false;
+    });
+  return sessionCheck;
+}
+
 export const requireSession: CanActivateFn = () => {
-  return fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' }).then((response) => {
-    if (response.ok) return true;
-    if (response.status === 401) sendToLogin();
-    return false;
-  }).catch(() => false);
+  const store = inject(NoticeStore);
+  return store.loading.run(async () => {
+    if (!await checkSession()) return false;
+    await store.load();
+    return true;
+  });
 };
 
 export async function signedIn(): Promise<boolean> {
-  const response = await fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
-  if (response?.ok) return true;
-  if (!response || response.status === 401) sendToLogin();
-  return false;
+  return checkSession();
 }
