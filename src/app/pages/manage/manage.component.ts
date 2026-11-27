@@ -17,6 +17,11 @@ const PAGE_SIZE = 10;
 export class ManageComponent {
   private readonly store = inject(NoticeStore);
   private readonly toast = inject(ToastService);
+
+  constructor() {
+    this.store.showView('manage');
+  }
+
   readonly kindLabel = kindLabel;
   readonly statusLabel = statusLabel;
   readonly shownDate = shownDate;

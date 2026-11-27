@@ -34,6 +34,7 @@ export class DetailComponent {
   }
 
   constructor() {
+    this.store.showView();
     inject(DestroyRef).onDestroy(() => window.clearTimeout(this.copiedTimer));
   }
 

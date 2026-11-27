@@ -27,8 +27,7 @@ export const requireSession: CanActivateFn = () => {
   const store = inject(NoticeStore);
   return store.loading.run(async () => {
     if (!await checkSession()) return false;
-    await store.load();
-    return true;
+    return store.ensureView();
   });
 };
 
@@ -36,10 +35,16 @@ export async function signedIn(): Promise<boolean> {
   return checkSession();
 }
 
+export function requireDefaultNotices(): CanActivateFn {
+  return () => {
+    const store = inject(NoticeStore);
+    return store.loading.run(() => store.ensureView());
+  };
+}
 
 export function requireAnnouncementManagement(view: 'manage' | 'reviews'): CanActivateFn {
   return () => {
     const store = inject(NoticeStore);
-    return store.loading.run(() => store.load(view));
+    return store.loading.run(() => store.ensureView(view));
   };
 }

@@ -16,6 +16,11 @@ const PAGE_SIZE = 10;
 export class ReviewComponent {
   private readonly store = inject(NoticeStore);
   private readonly toast = inject(ToastService);
+
+  constructor() {
+    this.store.showView('reviews');
+  }
+
   readonly kindLabel = kindLabel;
   readonly statusLabel = statusLabel;
   readonly applicantLabel = applicantLabel;

@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { OperationLoadingService, ToastService } from '@dandy1103/common';
 import { NoticeDraft, NoticeItem } from './notices';
 
@@ -8,51 +8,96 @@ interface Employee {
   canManage: boolean;
 }
 
+type NoticeView = 'default' | 'management';
+
 @Injectable({ providedIn: 'root' })
 export class NoticeStore {
   private readonly abortController = new AbortController();
   private readonly toast = inject(ToastService);
   readonly loading = inject(OperationLoadingService).create(this.abortController.signal);
-  private readonly items = signal<NoticeItem[]>([]);
+  private readonly defaultItems = signal<NoticeItem[]>([]);
+  private readonly managementItems = signal<NoticeItem[]>([]);
+  private readonly activeView = signal<NoticeView>('default');
   private readonly employee = signal<Employee | null>(null);
   private readonly state = signal<'loading' | 'ready' | 'login' | 'forbidden' | 'error'>('loading');
   private readonly pending = signal(false);
+  private readonly refreshing = signal(false);
+  private defaultReady = false;
+  private managementReady = false;
+  private desiredView: NoticeView = 'default';
+  private loadSeq = 0;
   private csrfToken = '';
 
-  readonly notices = this.items.asReadonly();
+  readonly notices = computed(() =>
+    this.activeView() === 'management' ? this.managementItems() : this.defaultItems(),
+  );
   readonly account = this.employee.asReadonly();
   readonly loadState = this.state.asReadonly();
   readonly saving = this.pending.asReadonly();
+  readonly isRefreshing = this.refreshing.asReadonly();
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.abortController.abort());
   }
 
+  showView(view?: 'manage' | 'reviews'): void {
+    const wanted: NoticeView = view ? 'management' : 'default';
+    this.desiredView = wanted;
+    this.activeView.set(wanted);
+  }
+
+  ensureView(view?: 'manage' | 'reviews'): Promise<boolean> {
+    const wanted: NoticeView = view ? 'management' : 'default';
+    this.desiredView = wanted;
+    if (this.state() === 'ready') {
+      if (wanted === 'default' && this.defaultReady) return Promise.resolve(true);
+      if (wanted === 'management' && this.managementReady) return Promise.resolve(true);
+    }
+    return this.load(view);
+  }
+
   async load(view?: 'manage' | 'reviews'): Promise<boolean> {
-    this.state.set('loading');
+    const wanted: NoticeView = view ? 'management' : 'default';
+    const seq = ++this.loadSeq;
+    this.desiredView = wanted;
+    const wasReady = this.state() === 'ready';
+    if (!wasReady) this.state.set('loading');
+    else this.refreshing.set(true);
     try {
       const query = view ? `?view=${encodeURIComponent(view)}` : '';
       const response = await fetch(`/api/notices${query}`, { cache: 'no-store' });
-      if (response.status === 401 || response.status === 403) {
-        this.state.set(response.status === 401 ? 'login' : 'forbidden');
+      if (response.status === 401) {
+        this.state.set('login');
+        return false;
+      }
+      if (response.status === 403) {
+        if (!wasReady) this.state.set('forbidden');
         return false;
       }
       if (!response.ok) throw new Error();
       const snapshot = await response.json() as { notices: NoticeItem[]; employee: Employee; csrfToken: string };
-      this.items.set(snapshot.notices);
+      if (wanted === 'management') {
+        this.managementItems.set(snapshot.notices);
+        this.managementReady = true;
+      } else {
+        this.defaultItems.set(snapshot.notices);
+        this.defaultReady = true;
+      }
       this.employee.set(snapshot.employee);
       this.csrfToken = snapshot.csrfToken;
       this.state.set('ready');
       return true;
     } catch {
-      this.state.set('error');
+      if (!wasReady) this.state.set('error');
       this.toast.showError('公告載入失敗', '請重新整理後再試一次。');
       return false;
+    } finally {
+      if (seq === this.loadSeq) this.refreshing.set(false);
     }
   }
 
   find(id: string): NoticeItem | undefined {
-    return this.items().find((item) => item.id === id);
+    return this.notices().find((item) => item.id === id);
   }
 
   save(draft: NoticeDraft, id: string): Promise<boolean> {
@@ -87,11 +132,9 @@ export class NoticeStore {
         if (response.status === 400) return this.fail('資料格式有誤。請檢查欄位內容後再試一次。');
         if (!response.ok) throw new Error();
         if (response.status === 204) {
-          this.items.update((items) => items.filter((item) => item.id !== id));
+          this.removeItem(id);
         } else {
-          const saved = await response.json() as NoticeItem;
-          this.items.update((items) => [saved, ...items.filter((item) => item.id !== saved.id)]
-            .sort((a, b) => b.publishedOn.localeCompare(a.publishedOn) || b.serial - a.serial));
+          this.upsertItem(await response.json() as NoticeItem);
         }
         return true;
       });
@@ -102,8 +145,26 @@ export class NoticeStore {
     }
   }
 
+  private upsertItem(saved: NoticeItem): void {
+    this.defaultItems.update((items) => sortNotices([saved, ...items.filter((item) => item.id !== saved.id)]));
+    if (saved.status === 'draft') {
+      this.managementItems.update((items) => items.filter((item) => item.id !== saved.id));
+      return;
+    }
+    this.managementItems.update((items) => sortNotices([saved, ...items.filter((item) => item.id !== saved.id)]));
+  }
+
+  private removeItem(id: string): void {
+    this.defaultItems.update((items) => items.filter((item) => item.id !== id));
+    this.managementItems.update((items) => items.filter((item) => item.id !== id));
+  }
+
   private fail(message: string): false {
     this.toast.showError('操作失敗', message);
     return false;
   }
+}
+
+function sortNotices(items: NoticeItem[]): NoticeItem[] {
+  return items.sort((a, b) => b.publishedOn.localeCompare(a.publishedOn) || b.serial - a.serial);
 }

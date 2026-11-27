@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { requireAnnouncementManagement, requireSession } from './require-session';
+import { requireAnnouncementManagement, requireDefaultNotices, requireSession } from './require-session';
 import { DetailComponent } from './pages/detail/detail.component';
 import { ListComponent } from './pages/list/list.component';
 import { ManageComponent } from './pages/manage/manage.component';
@@ -9,19 +9,19 @@ import { ReviewComponent } from './pages/review/review.component';
 export const routes: Routes = [
   { path: '', canActivate: [requireSession], children: [
   { path: '', pathMatch: 'full', redirectTo: 'operations' },
-  { path: 'operations', component: ListComponent, data: { kind: 'company' } },
-  { path: 'operations/:id', component: DetailComponent },
-  { path: 'events', component: ListComponent, data: { kind: 'event' } },
-  { path: 'events/:id', component: DetailComponent },
-  { path: 'people', component: ListComponent, data: { kind: 'people' } },
-  { path: 'people/:id', component: DetailComponent },
-  { path: 'policy', component: ListComponent, data: { kind: 'policy' } },
-  { path: 'policy/:id', component: DetailComponent },
+  { path: 'operations', canActivate: [requireDefaultNotices], component: ListComponent, data: { kind: 'company' } },
+  { path: 'operations/:id', canActivate: [requireDefaultNotices], component: DetailComponent },
+  { path: 'events', canActivate: [requireDefaultNotices], component: ListComponent, data: { kind: 'event' } },
+  { path: 'events/:id', canActivate: [requireDefaultNotices], component: DetailComponent },
+  { path: 'people', canActivate: [requireDefaultNotices], component: ListComponent, data: { kind: 'people' } },
+  { path: 'people/:id', canActivate: [requireDefaultNotices], component: DetailComponent },
+  { path: 'policy', canActivate: [requireDefaultNotices], component: ListComponent, data: { kind: 'policy' } },
+  { path: 'policy/:id', canActivate: [requireDefaultNotices], component: DetailComponent },
   { path: 'reviews', canActivate: [requireAnnouncementManagement('reviews')], component: ReviewComponent },
   { path: 'manage', canActivate: [requireAnnouncementManagement('manage')], component: ManageComponent },
-  { path: 'publish', component: PublishComponent },
+  { path: 'publish', canActivate: [requireDefaultNotices], component: PublishComponent },
   { path: 'notice', pathMatch: 'full', redirectTo: 'operations' },
-  { path: 'notice/:id', component: DetailComponent },
+  { path: 'notice/:id', canActivate: [requireDefaultNotices], component: DetailComponent },
   { path: '**', redirectTo: 'operations' },
   ]},
 ];

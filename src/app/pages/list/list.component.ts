@@ -70,6 +70,7 @@ export class ListComponent {
   }
 
   constructor() {
+    this.store.showView();
     this.route.data.pipe(takeUntilDestroyed()).subscribe(() => {
       this.page.set(1);
       this.audiencePick.set('');

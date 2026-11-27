@@ -1,5 +1,36 @@
 :host {
   display: block;
+  position: relative;
+  min-height: 100%;
+}
+
+.frame {
+  position: relative;
+  min-height: inherit;
+}
+
+.frame--boot {
+  min-height: calc(100dvh - 160px);
+}
+
+.frame__spinner {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: color-mix(in srgb, var(--color-surface, #f8fafc) 72%, transparent);
+}
+
+.frame__spinner-center {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.frame--busy > :not(.frame__spinner) {
+  pointer-events: none;
 }
 
 :host:has(.login-dialog[open]) {

@@ -50,6 +50,7 @@ export class PublishComponent {
   }
 
   constructor() {
+    this.store.showView();
     this.fill(this.noticeId());
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const id = params.get('id') ?? '';
