@@ -1,13 +1,9 @@
+@use 'sass:meta';
+@use '@dandy1103/ui/styles/reset';
+@use '@dandy1103/ui/styles/button';
 @use '@dandy1103/ui/styles/controls';
+@use '@dandy1103/ui/styles/type';
 
-*, *::before, *::after { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  font-family: Inter, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-  font-size: 16px;
+@layer noah-utilities {
+  @include meta.load-css('@dandy1103/ui/styles/utilities');
 }
-
-h1 { margin: 0; }
