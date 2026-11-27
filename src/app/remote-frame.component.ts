@@ -1,61 +1,49 @@
-import { Component, ElementRef, computed, inject, ViewChild } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NoahSpinnerComponent } from '@dandy1103/ui';
+import { NoahButtonComponent, NoahDialogComponent, NoahLoadingMaskComponent } from '@dandy1103/ui';
 import { NoticeStore } from './pages/notice-store';
 import { sendToLogin } from './require-session';
 
 @Component({
   selector: 'app-remote-frame',
   standalone: true,
-  imports: [RouterOutlet, NoahSpinnerComponent],
+  imports: [RouterOutlet, NoahButtonComponent, NoahDialogComponent, NoahLoadingMaskComponent],
   template: `
     @switch (loadState()) {
       @case ('ready') {
-        <div class="frame" [class.frame--busy]="busy()">
-          @if (busy()) {
-            <div class="frame__spinner">
-              <div class="frame__spinner-center">
-                <noah-spinner label="載入中" />
-              </div>
-            </div>
-          }
-          <router-outlet />
-        </div>
+        @if (busy()) {
+          <noah-loading-mask phase="visible" label="載入中" />
+        }
+        <router-outlet />
       }
       @case ('loading') {
-        <div class="frame frame--boot">
-          <div class="frame__spinner-center">
-            <noah-spinner label="正在載入公告" />
-          </div>
-        </div>
+        <noah-loading-mask phase="visible" label="正在載入公告" />
       }
       @case ('login') {
-        <dialog #loginDialog class="login-dialog" aria-labelledby="login-title" (cancel)="$event.preventDefault()">
-          <h1 id="login-title">登入逾時請重新登入</h1>
-          <a class="login-action" href="/auth/login" (click)="signInAgain($event)" autofocus>重新登入</a>
-        </dialog>
+        <noah-dialog
+          [open]="true"
+          mode="alert"
+          title="登入逾時請重新登入"
+          confirmLabel="重新登入"
+          [showClose]="false"
+          [closeOnBackdrop]="false"
+          (confirmed)="signInAgain()"
+        />
       }
       @case ('forbidden') { <p role="alert">你沒有權限查看此公告管理頁面。</p> }
       @case ('error') {
-        <p role="alert">公告載入失敗。</p>
-        <button type="button" (click)="retry()">重新載入</button>
+        <p class="u-mb-md" role="alert">公告載入失敗。</p>
+        <noah-button type="button" size="small" message="重新載入" (click)="retry()" />
       }
     }
   `,
-  styleUrl: './app.component.scss',
 })
 export class RemoteFrameComponent {
   private readonly store = inject(NoticeStore);
   readonly loadState = this.store.loadState;
   readonly busy = computed(() => this.store.isRefreshing() || this.store.loading.phase() !== 'hidden');
 
-  @ViewChild('loginDialog')
-  set loginDialog(dialog: ElementRef<HTMLDialogElement> | undefined) {
-    if (dialog && !dialog.nativeElement.open) dialog.nativeElement.showModal();
-  }
-
-  signInAgain(event: Event): void {
-    event.preventDefault();
+  signInAgain(): void {
     sendToLogin();
   }
 

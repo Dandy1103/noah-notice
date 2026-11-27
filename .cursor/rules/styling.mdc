@@ -1,0 +1,21 @@
+---
+description: 禁止自訂 class / inline style，樣式用 UI library functional CSS
+alwaysApply: true
+---
+
+# 樣式
+
+- 禁止為了排版新增專案內 class，也禁止 `style="..."` / `[style.*]`
+- 排版、間距、對齊、顏色、flex／grid 用 `@dandy1103/ui` 的 `u-*` utility
+- 元件外觀優先用套件元件（`noah-button`、`noah-input`、`noah-table` 等）
+- 輸入一律用 `noah-input`（`noahInput` directive 已移除）。沒有可見 label 時用 `ariaLabel`；樣式／行為不夠就擴充元件，不要另開捷徑
+- 不要在 `pages`／`shared` 新開 component SCSS 去補版面
+- `src/styles.scss` 只載入套件樣式（含 `reset`）；body 基底在 library，缺 utility 先補 library
+
+```html
+<!-- ❌ -->
+<div class="toolbar" style="display: flex; gap: 8px">...</div>
+
+<!-- ✅ -->
+<div class="u-flex u-items-center u-gap-sm">...</div>
+```

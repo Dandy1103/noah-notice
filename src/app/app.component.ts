@@ -7,7 +7,6 @@ import { signedIn } from './require-session';
   standalone: true,
   imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   readonly shellReady = signal(false);

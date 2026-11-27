@@ -1,17 +1,15 @@
-import { NoahPageHeadingComponent, NoahInputDirective } from '@dandy1103/ui';
+import { NoahButtonComponent, NoahIconButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahTableComponent, NoahTableDetailComponent, NoahTableDetailContentComponent } from '@dandy1103/ui';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ToastService } from '@dandy1103/common';
-import { applicantLabel, kindLabel, matchesKeyword, NoticeItem, reviewerLabel, shownDate, statusLabel } from '../notices';
+import { applicantLabel, kindLabel, matchesKeyword, NoticeItem, reviewerLabel, shownDate, statusLabel, statusTone } from '../notices';
 import { NoticeStore } from '../notice-store';
-
-const PAGE_SIZE = 10;
+import { paginateNotices } from '../notice-pagination';
 
 @Component({
   selector: 'app-review',
   standalone: true,
-  imports: [NoahPageHeadingComponent, NoahInputDirective],
+  imports: [NoahTableComponent, NoahButtonComponent, NoahIconButtonComponent, NoahPageHeadingComponent, NoahInputComponent, NoahTableDetailComponent, NoahTableDetailContentComponent],
   templateUrl: './review.component.html',
-  styleUrl: './review.component.scss',
 })
 export class ReviewComponent {
   private readonly store = inject(NoticeStore);
@@ -23,10 +21,10 @@ export class ReviewComponent {
 
   readonly kindLabel = kindLabel;
   readonly statusLabel = statusLabel;
+  readonly statusTone = statusTone;
   readonly applicantLabel = applicantLabel;
   readonly reviewerLabel = reviewerLabel;
   readonly shownDate = shownDate;
-  readonly page = signal(1);
   readonly view = signal<'pending' | 'processed'>('pending');
   readonly filterText = signal('');
   readonly opened = signal<NoticeItem | null>(null);
@@ -42,13 +40,7 @@ export class ReviewComponent {
     .sort(byReviewQueue));
   readonly notices = computed(() => this.applications().filter((item) => matchesKeyword(item, this.filterText())));
   readonly emptyText = computed(() => this.applications().length === 0 ? '目前沒有申請。' : '找不到符合的申請。');
-  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.notices().length / PAGE_SIZE)));
-  readonly pageNumbers = computed(() => Array.from({ length: this.pageCount() }, (_, index) => index + 1));
-  readonly pageRows = computed(() => {
-    const start = (this.page() - 1) * PAGE_SIZE;
-    return this.notices().slice(start, start + PAGE_SIZE);
-  });
-  readonly blankRows = computed(() => Array.from({ length: PAGE_SIZE - this.pageRows().length }, (_, index) => index));
+  readonly pagination = paginateNotices(this.notices);
   get portalHome(): string {
     return '/portal';
   }
@@ -59,12 +51,12 @@ export class ReviewComponent {
 
   pickFilter(event: Event): void {
     this.filterText.set(this.fieldValue(event));
-    this.page.set(1);
+    this.pagination.go(1);
   }
 
   setView(view: 'pending' | 'processed'): void {
     this.view.set(view);
-    this.page.set(1);
+    this.pagination.go(1);
     this.opened.set(null);
     this.cancelReject();
   }
@@ -100,34 +92,25 @@ export class ReviewComponent {
   async agree(id: string): Promise<void> {
     if (!await this.store.change(id, 'approve')) return;
     this.closeIfOpen(id);
-    this.stayOnPage();
+    this.pagination.go(this.pagination.page());
     this.toast.showSuccess('審核完成');
   }
 
   async decline(id: string, reason: string): Promise<void> {
     if (!await this.store.change(id, 'reject', reason)) return;
     this.closeIfOpen(id);
-    this.stayOnPage();
+    this.pagination.go(this.pagination.page());
     this.toast.showSuccess('退件完成');
   }
 
-  goPage(page: number): void {
-    if (page < 1 || page > this.pageCount()) return;
-    this.page.set(page);
+  onPageChange(): void {
     this.opened.set(null);
-  }
-
-  shiftPage(offset: number): void {
-    this.goPage(this.page() + offset);
+    this.cancelReject();
   }
 
   private closeIfOpen(id: string): void {
     if (this.opened()?.id === id) this.opened.set(null);
     this.cancelReject();
-  }
-
-  private stayOnPage(): void {
-    if (this.page() > this.pageCount()) this.page.set(this.pageCount());
   }
 }
 

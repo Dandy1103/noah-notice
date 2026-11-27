@@ -1,36 +1,32 @@
 <noah-page-heading [title]="heading()" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: title() }]" />
 
-<form class="notice-query" (submit)="search($event)">
-  <label>
-    <span>對象</span>
-    <app-select [value]="audiencePick()" [options]="audienceChoices()" (valueChange)="audiencePick.set($event)" />
-  </label>
-  <label>
-    <span>單位</span>
-    <app-select [value]="unitPick()" [options]="unitChoices()" (valueChange)="unitPick.set($event)" />
-  </label>
-  <label>
-    <span>主旨</span>
-    <input noahInput placeholder="輸入主旨" [value]="titlePick()" (input)="titlePick.set(fieldValue($event))">
-  </label>
-  <div class="notice-query__actions">
-    <button type="submit">搜尋</button>
-    <button type="button" class="is-secondary" (click)="clear()">清除</button>
+<form class="u-bar-grid u-items-end u-mb-md" (submit)="search($event)">
+  <noah-select class="u-col-span-2" label="對象" emptyLabel="全部" [value]="audiencePick()" [options]="audienceChoices()" (valueChange)="audiencePick.set($event)" />
+  <noah-select class="u-col-span-2" label="單位" emptyLabel="全部" [value]="unitPick()" [options]="unitChoices()" (valueChange)="unitPick.set($event)" />
+  <noah-input class="u-col-span-2" label="主旨" placeholder="輸入主旨" [value]="titlePick()" (input)="titlePick.set(fieldValue($event))" />
+  <div class="u-col-span-3 u-flex u-items-center u-gap-sm">
+    <noah-button class="u-flex-1" type="submit" message="搜尋" />
+    <noah-button class="u-flex-1" type="button" variant="secondary" message="清除" (click)="clear()" />
   </div>
 </form>
 
-<div class="notice-filter">
-  <input noahInput aria-label="篩選" placeholder="篩選關鍵字" [value]="filterText()" (input)="pickFilter($event)">
+<div class="u-bar-grid u-mt-md u-mb-md">
+  <noah-input class="u-col-end-2" ariaLabel="篩選" placeholder="篩選關鍵字" [value]="filterText()" (input)="pickFilter($event)" />
 </div>
 
-<div class="notice-list" [class.is-idle]="pageRows().length === 0">
+<noah-table
+  variant="list"
+  pager
+  [page]="pagination.page()"
+  [pageCount]="pagination.pageCount()"
+  (pageChange)="pagination.go($event)">
   <table>
     <colgroup>
-      <col class="col-no">
-      <col class="col-org">
-      <col>
-      <col class="col-who">
-      <col class="col-date">
+      <col class="u-table-span-1">
+      <col class="u-table-span-1">
+      <col class="u-table-span-7">
+      <col class="u-table-span-1">
+      <col class="u-table-span-2">
     </colgroup>
     <thead>
       <tr>
@@ -42,58 +38,29 @@
       </tr>
     </thead>
     <tbody>
-      @for (item of pageRows(); track item.id; let isEven = $even) {
+      @for (item of pagination.rows(); track item.id; let isEven = $even) {
         <tr class="is-link" [class.is-even]="isEven" [class.is-odd]="!isEven" [class.is-expanded]="opened()?.id === item.id" tabindex="0" (click)="openNotice(item.id)" (keydown.enter)="openNotice(item.id)">
           <td>{{ item.serial }}</td>
           <td>{{ item.unit }}</td>
-          <td class="title">{{ item.title }}</td>
+          <td class="title u-font-semibold">{{ item.title }}</td>
           <td>{{ item.audience }}</td>
-          <td><time [attr.datetime]="item.listedOn">{{ shownDate(item.listedOn) }}</time></td>
+          <td><time class="u-text-secondary" [attr.datetime]="item.listedOn">{{ shownDate(item.listedOn) }}</time></td>
         </tr>
         @if (opened()?.id === item.id) {
-          <tr class="inline-detail" [class.is-even]="isEven" [class.is-odd]="!isEven">
-            <td colspan="5">
-              <h3>內文</h3>
-              <p class="inline-detail__body">{{ item.body }}</p>
-              @if (item.attachments?.length) {
-                <h3>附件</h3>
-                <ul class="inline-detail__attachments">
-                  @for (attachment of item.attachments; track attachment.url) {
-                    <li><a [href]="attachment.url" [attr.download]="attachment.name">{{ attachment.name }}</a></li>
-                  }
-                </ul>
-              }
-            </td>
+          <tr noahTableDetail [colspan]="5">
+            <noah-table-detail-content [body]="item.body" [attachments]="item.attachments" />
           </tr>
         }
       }
-      @if (pageRows().length === 0) {
+      @if (pagination.rows().length === 0) {
         <tr class="is-empty">
-          <td colspan="5">
-            <div class="empty">
-              <p>{{ emptyText() }}</p>
-            </div>
-          </td>
+          <td colspan="5"><p class="u-m-0 u-text-secondary">{{ emptyText() }}</p></td>
         </tr>
-      }
-      @for (blank of blankRows(); track blank) {
-        @if (pageRows().length > 0) {
-          <tr class="is-blank">
-            <td colspan="5"></td>
-          </tr>
+      } @else {
+        @for (blank of pagination.blanks(); track blank) {
+          <tr class="is-blank" aria-hidden="true"><td colspan="5"></td></tr>
         }
       }
     </tbody>
   </table>
-  <nav class="pager" aria-label="換頁">
-      <button type="button" (click)="shiftPage(-1)" [disabled]="page() === 1">上一頁</button>
-      @for (number of pageNumbers(); track number) {
-        <button type="button"
-          [class.is-current]="number === page()"
-          [attr.aria-current]="number === page() ? 'page' : null"
-          [attr.aria-label]="'第 ' + number + ' 頁'"
-          (click)="goPage(number)">{{ number }}</button>
-      }
-      <button type="button" (click)="shiftPage(1)" [disabled]="page() === pageCount()">下一頁</button>
-    </nav>
-</div>
+</noah-table>

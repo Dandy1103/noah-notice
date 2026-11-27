@@ -1,69 +1,66 @@
 @if (missing()) {
   <noah-page-heading title="公告" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: '公告管理', route: '/notice/manage' }]" />
-  <p class="missing">找不到這則公告。</p>
-  <a class="back" routerLink="/notice/manage">回列表</a>
+  <p class="u-m-0 u-mb-md u-text-md u-text-secondary">找不到這則公告。</p>
+  <a class="u-text-brand u-font-semibold" routerLink="/notice/manage">回列表</a>
 } @else {
   <noah-page-heading title="我的公告申請" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: '公告申請' }]" />
   @if (mode() === 'new') {
-    <div class="application-scrim" (click)="show('mine')">
-      <section
-        class="application-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="application-dialog-title"
-        (click)="$event.stopPropagation()">
-        <header class="dialog-head">
-          <div>
-            <p class="eyebrow">公告申請</p>
-            <h2 id="application-dialog-title">{{ editing() ? '修改申請' : '新增申請' }}</h2>
-          </div>
-          <button type="button" aria-label="關閉" (click)="show('mine')">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
-          </button>
-        </header>
-        <form class="sheet" (submit)="save($event)">
-    <label class="field is-wide">
-      <span>主旨</span>
-      <input noahInput [value]="title()" (input)="title.set(fieldValue($event))">
-    </label>
-    <label class="field">
-      <span>類型</span>
-      <app-select [value]="kind()" [options]="kindOptions" (valueChange)="setKind($event)" />
-    </label>
-    <label class="field">
-      <span>對象</span>
-      <app-select [value]="audience()" [options]="audienceOptions" (valueChange)="audience.set($event)" />
-    </label>
-    <label class="field">
-      <span>內文</span>
-      <textarea [value]="body()" (input)="body.set(fieldValue($event))"></textarea>
-    </label>
-    @if (error()) {
-      <p class="error" role="alert">{{ error() }}</p>
-    }
-    <div class="submit">
-      <button type="submit" [disabled]="saving()">{{ editing() ? '儲存變更' : '儲存申請' }}</button>
-      <button type="button" class="is-back" (click)="show('mine')">返回列表</button>
-    </div>
-        </form>
-      </section>
-    </div>
+    <noah-dialog
+      [open]="true"
+      mode="content"
+      size="large"
+      eyebrow="公告申請"
+      [title]="editing() ? '修改申請' : '新增申請'"
+      (closed)="closeDialog()">
+      <form id="notice-application-form" class="u-form-grid u-items-start u-p-xs" (submit)="save($event)">
+        <noah-input class="u-col-span-full" label="主旨" [value]="title()" (input)="title.set(fieldValue($event))" />
+        <noah-select label="類型" [value]="kind()" [options]="kindOptions" (valueChange)="setKind($event)" />
+        <noah-select label="對象" [value]="audience()" [options]="audienceOptions" (valueChange)="audience.set($event)" />
+        <noah-input class="u-col-span-full" label="內文" multiline [value]="body()" (input)="body.set(fieldValue($event))" />
+        <noah-file-upload
+          class="u-col-span-full"
+          label="附件（選填）"
+          title="選擇附件"
+          [hint]="'最多 ' + attachmentLimit + ' 個，支援 PDF／Office／圖片'"
+          [accept]="attachmentAccept"
+          [files]="attachments()"
+          (filesSelected)="pickAttachments($event)"
+          (remove)="removeAttachment($event)" />
+        @if (error()) {
+          <p class="u-m-0 u-col-span-full u-text-danger" role="alert">{{ error() }}</p>
+        }
+      </form>
+      <div noahDialogActions class="u-flex u-flex-wrap u-justify-center u-gap-sm">
+        <noah-button
+          type="submit"
+          form="notice-application-form"
+          size="small"
+          [message]="editing() ? '儲存變更' : '儲存申請'"
+          [disabled]="saving()" />
+        <noah-button type="button" size="small" variant="secondary" message="返回列表" (click)="closeDialog()" />
+      </div>
+    </noah-dialog>
   }
-  <div class="application-actions">
-    <button type="button" class="new-application" (click)="startNew()">新增申請</button>
+  <div class="u-flex u-justify-end u-mb-sm">
+    <noah-button type="button" size="small" variant="primary" message="新增申請" (click)="startNew()" />
   </div>
-  <div class="notice-list application-list" [class.is-idle]="myApplications().length === 0">
+  <noah-table
+    variant="list"
+    pager
+    [page]="pagination.page()"
+    [pageCount]="pagination.pageCount()"
+    (pageChange)="pagination.go($event); openedApplicationId.set(null)">
       <table>
         <colgroup>
-          <col class="col-no">
-          <col class="col-kind">
-          <col class="col-org">
-          <col class="col-status">
-          <col class="col-title">
-          <col class="col-who">
-          <col class="col-date">
-          <col class="col-reviewer">
-          <col class="col-action">
+          <col class="u-table-span-1">
+          <col class="u-table-span-1">
+          <col class="u-table-span-1">
+          <col class="u-table-span-1">
+          <col class="u-table-span-2">
+          <col class="u-table-span-1">
+          <col class="u-table-span-2">
+          <col class="u-table-span-1">
+          <col class="u-table-span-2">
         </colgroup>
         <thead>
           <tr>
@@ -79,54 +76,46 @@
           </tr>
         </thead>
         <tbody>
-          @for (item of myApplications(); track item.id; let isEven = $even) {
+          @for (item of pagination.rows(); track item.id; let isEven = $even) {
             <tr class="is-link" [class.is-even]="isEven" [class.is-odd]="!isEven" [class.is-expanded]="openedApplicationId() === item.id" tabindex="0" (click)="toggleApplication(item.id)" (keydown.enter)="toggleApplication(item.id)">
               <td>{{ item.serial }}</td>
               <td>{{ kindLabel(item.kind) }}</td>
               <td>{{ item.unit }}</td>
-              <td class="status-cell"><span class="status-tag" [attr.data-status]="item.status">{{ statusLabel(item.status) }}</span></td>
-              <td class="title">{{ item.title }}</td>
+              <td class="status-cell"><span class="status-tag" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item.status) }}</span></td>
+              <td class="title u-font-semibold">{{ item.title }}</td>
               <td>{{ item.audience }}</td>
-              <td><time [attr.datetime]="item.publishedOn">{{ shownDate(item.publishedOn) }}</time></td>
+              <td><time class="u-text-secondary" [attr.datetime]="item.publishedOn">{{ shownDate(item.publishedOn) }}</time></td>
               <td>{{ reviewerLabel(item) }}</td>
               <td class="actions">
                 @if (item.status === 'draft') {
-                  <button type="button" class="is-submit" (click)="$event.stopPropagation(); submitApplication(item.id)">送出</button>
-                  <button type="button" class="is-edit" (click)="$event.stopPropagation(); editApplication(item)">編輯</button>
-                  <button type="button" class="is-delete" (click)="$event.stopPropagation(); deleteApplication(item.id)">刪除</button>
+                  <div class="u-flex u-items-center u-gap-sm">
+                    <noah-icon-button icon="send" label="送出" variant="primary" (click)="$event.stopPropagation(); submitApplication(item.id)" />
+                    <noah-icon-button icon="edit" label="編輯" (click)="$event.stopPropagation(); editApplication(item)" />
+                    <noah-icon-button icon="delete" label="刪除" variant="danger" (click)="$event.stopPropagation(); deleteApplication(item.id)" />
+                  </div>
                 } @else if (item.status === 'pending') {
-                  <button type="button" class="is-recall" (click)="$event.stopPropagation(); recallApplication(item.id)">回收</button>
+                  <noah-icon-button icon="recall" label="回收" (click)="$event.stopPropagation(); recallApplication(item.id)" />
                 } @else if (item.status === 'rejected') {
-                  <button type="button" class="is-edit" (click)="$event.stopPropagation(); editApplication(item)">編輯</button>
-                  <button type="button" class="is-delete" (click)="$event.stopPropagation(); deleteApplication(item.id)">刪除</button>
-                } @else {
-                  —
+                  <div class="u-flex u-items-center u-gap-sm">
+                    <noah-icon-button icon="edit" label="編輯" (click)="$event.stopPropagation(); editApplication(item)" />
+                    <noah-icon-button icon="delete" label="刪除" variant="danger" (click)="$event.stopPropagation(); deleteApplication(item.id)" />
+                  </div>
                 }
               </td>
             </tr>
             @if (openedApplicationId() === item.id) {
-              <tr class="inline-detail" [class.is-even]="isEven" [class.is-odd]="!isEven">
-                <td colspan="9">
-                  <h3>內文</h3>
-                  <p class="inline-detail__body">{{ item.body }}</p>
-                  @if (item.attachments?.length) {
-                    <h3>附件</h3>
-                    <ul class="inline-detail__attachments">
-                      @for (attachment of item.attachments; track attachment.url) {
-                        <li><a [href]="attachment.url" [attr.download]="attachment.name">{{ attachment.name }}</a></li>
-                      }
-                    </ul>
-                  }
-                  <section class="inline-detail__result">
-                    <h3>處理結果</h3>
-                    <div class="inline-detail__result-content">
-                      <span class="status-tag" [attr.data-status]="item.status">{{ statusLabel(item.status) }}</span>
+              <tr noahTableDetail [colspan]="9">
+                <noah-table-detail-content [body]="item.body" [attachments]="item.attachments">
+                  <section class="noah-table-detail__result">
+                    <h3 class="u-text-secondary">處理結果</h3>
+                    <div class="noah-table-detail__result-body u-flex u-flex-wrap u-items-center u-gap-sm">
+                      <span class="status-tag" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item.status) }}</span>
                       @if (item.status === 'rejected') {
                         <p>退回原因：{{ item.rejectReason }}</p>
-                        <button type="button" (click)="editApplication(item)">編輯申請</button>
+                        <noah-button type="button" size="small" message="編輯申請" (click)="editApplication(item)" />
                       } @else if (item.status === 'approved') {
                         <p>刊登時間：{{ shownDate(item.listedOn) }}</p>
-                        <a [routerLink]="'/' + kindPath(item.kind) + '/' + item.id">查看公告</a>
+                        <a class="u-text-brand u-font-semibold" [routerLink]="['/notice', kindPath(item.kind), item.id]">查看公告</a>
                       } @else if (item.status === 'withdrawn') {
                         <p>刊登 {{ shownDate(item.listedOn) }}／下架 {{ shownDate(item.withdrawnOn ?? '') }}</p>
                       } @else {
@@ -134,13 +123,20 @@
                       }
                     </div>
                   </section>
-                </td>
+                </noah-table-detail-content>
               </tr>
             }
-          } @empty {
-            <tr class="is-empty"><td colspan="9"><div class="empty"><p>目前沒有申請紀錄。</p></div></td></tr>
+          }
+          @if (pagination.rows().length === 0) {
+            <tr class="is-empty">
+              <td colspan="9"><p class="u-m-0 u-text-secondary">目前沒有申請紀錄。</p></td>
+            </tr>
+          } @else {
+            @for (blank of pagination.blanks(); track blank) {
+              <tr class="is-blank" aria-hidden="true"><td colspan="9"></td></tr>
+            }
           }
         </tbody>
       </table>
-  </div>
+  </noah-table>
 }
