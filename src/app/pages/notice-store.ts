@@ -21,11 +21,8 @@ export class NoticeStore {
   private readonly employee = signal<Employee | null>(null);
   private readonly state = signal<'loading' | 'ready' | 'login' | 'forbidden' | 'error'>('loading');
   private readonly pending = signal(false);
-  private readonly refreshing = signal(false);
   private defaultReady = false;
   private managementReady = false;
-  private desiredView: NoticeView = 'default';
-  private loadSeq = 0;
   private csrfToken = '';
 
   readonly notices = computed(() =>
@@ -34,7 +31,6 @@ export class NoticeStore {
   readonly account = this.employee.asReadonly();
   readonly loadState = this.state.asReadonly();
   readonly saving = this.pending.asReadonly();
-  readonly isRefreshing = this.refreshing.asReadonly();
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.abortController.abort());
@@ -42,13 +38,11 @@ export class NoticeStore {
 
   showView(view?: 'manage' | 'reviews'): void {
     const wanted: NoticeView = view ? 'management' : 'default';
-    this.desiredView = wanted;
     this.activeView.set(wanted);
   }
 
   ensureView(view?: 'manage' | 'reviews'): Promise<boolean> {
     const wanted: NoticeView = view ? 'management' : 'default';
-    this.desiredView = wanted;
     if (this.state() === 'ready') {
       if (wanted === 'default' && this.defaultReady) return Promise.resolve(true);
       if (wanted === 'management' && this.managementReady) return Promise.resolve(true);
@@ -58,11 +52,8 @@ export class NoticeStore {
 
   async load(view?: 'manage' | 'reviews'): Promise<boolean> {
     const wanted: NoticeView = view ? 'management' : 'default';
-    const seq = ++this.loadSeq;
-    this.desiredView = wanted;
     const wasReady = this.state() === 'ready';
     if (!wasReady) this.state.set('loading');
-    else this.refreshing.set(true);
     try {
       const query = view ? `?view=${encodeURIComponent(view)}` : '';
       const response = await fetch(`/api/notices${query}`, { cache: 'no-store' });
@@ -91,8 +82,6 @@ export class NoticeStore {
       if (!wasReady) this.state.set('error');
       this.toast.showError('公告載入失敗', '請重新整理後再試一次。');
       return false;
-    } finally {
-      if (seq === this.loadSeq) this.refreshing.set(false);
     }
   }
 

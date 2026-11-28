@@ -1,10 +1,12 @@
-import { NoahButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahSelectComponent, NoahTableComponent, NoahTableDetailComponent, NoahTableDetailContentComponent } from '@dandy1103/ui';
+import { NoahButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahSelectComponent, NoahTableComponent, NoahTableDetailComponent } from '@dandy1103/ui';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { kindLabel, matchesKeyword, matchesNoticeQuery, NoticeItem, NoticeKind, shownDate, uniqueNames } from '../notices';
 import { NoticeStore } from '../notice-store';
+import { NoticeDetailComponent } from '../notice-detail/notice-detail.component';
+import { NoticeDetailToggleComponent } from '../notice-detail/notice-detail-toggle.component';
 import { paginateNotices } from '../notice-pagination';
 
 const LIST_HEADINGS: Record<NoticeKind, string> = {
@@ -17,7 +19,7 @@ const LIST_HEADINGS: Record<NoticeKind, string> = {
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [NoahTableComponent, NoahButtonComponent, NoahPageHeadingComponent, NoahInputComponent, NoahSelectComponent, NoahTableDetailComponent, NoahTableDetailContentComponent],
+  imports: [NoahTableComponent, NoahButtonComponent, NoahPageHeadingComponent, NoahInputComponent, NoahSelectComponent, NoahTableDetailComponent, NoticeDetailComponent, NoticeDetailToggleComponent],
   templateUrl: './list.component.html',
 })
 export class ListComponent {

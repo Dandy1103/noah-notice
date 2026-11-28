@@ -5,6 +5,7 @@ export type NoticeStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'with
 export interface NoticeAttachment {
   name: string;
   url: string;
+  displayName?: string;
 }
 
 export const NOTICE_ATTACHMENT_TYPES = [
@@ -12,8 +13,13 @@ export const NOTICE_ATTACHMENT_TYPES = [
 ] as const;
 
 export const NOTICE_ATTACHMENT_LIMIT = 5;
+export const NOTICE_ATTACHMENT_NAME_LIMIT = 250;
 export const NOTICE_ATTACHMENT_URL_LIMIT = 1_500_000;
 export const NOTICE_ATTACHMENT_ACCEPT = NOTICE_ATTACHMENT_TYPES.map((type) => `.${type}`).join(',');
+
+export function attachmentLabel(attachment: NoticeAttachment): string {
+  return attachment.displayName?.trim() || attachment.name;
+}
 
 export interface NoticeItem {
   id: string;
@@ -66,7 +72,7 @@ export function kindLabel(kind: NoticeKind): string {
   return KIND_PAGES[kind].label;
 }
 
-export type StatusTone = 'warning' | 'neutral' | 'success' | 'danger';
+export type StatusTone = 'info' | 'warning' | 'neutral' | 'success' | 'danger';
 
 export function statusLabel(status: NoticeStatus): string {
   if (status === 'draft') return '草稿';
@@ -77,6 +83,7 @@ export function statusLabel(status: NoticeStatus): string {
 }
 
 export function statusTone(status: NoticeStatus): StatusTone {
+  if (status === 'draft') return 'info';
   if (status === 'pending') return 'warning';
   if (status === 'approved') return 'success';
   if (status === 'rejected') return 'danger';

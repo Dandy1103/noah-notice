@@ -1,13 +1,15 @@
-import { NoahButtonComponent, NoahDialogComponent, NoahFileUploadComponent, NoahIconButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahSelectComponent, NoahTableComponent, NoahTableDetailComponent, NoahTableDetailContentComponent } from '@dandy1103/ui';
+import { NoahButtonComponent, NoahDialogComponent, NoahFileUploadComponent, NoahIconButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahSelectComponent, NoahTableComponent, NoahTableDetailComponent } from '@dandy1103/ui';
 import { Component, computed, inject, signal } from '@angular/core';
-import { ToastService } from '@dandy1103/common';
+import { createConfirmation, ToastService } from '@dandy1103/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
+  attachmentLabel,
   kindLabel,
   kindPath,
   NOTICE_ATTACHMENT_ACCEPT,
   NOTICE_ATTACHMENT_LIMIT,
+  NOTICE_ATTACHMENT_NAME_LIMIT,
   NOTICE_ATTACHMENT_TYPES,
   NOTICE_ATTACHMENT_URL_LIMIT,
   NOTICE_AUDIENCES,
@@ -21,22 +23,34 @@ import {
   statusTone,
 } from '../notices';
 import { NoticeStore } from '../notice-store';
+import { NoticeDetailComponent } from '../notice-detail/notice-detail.component';
+import { NoticeDetailToggleComponent } from '../notice-detail/notice-detail-toggle.component';
 import { paginateNotices } from '../notice-pagination';
+
+const applicationConfirmations = {
+  submit: { title: '確認送出審核？', detail: '將送出審核。', label: '確認送審', variant: 'primary', success: '申請已送出' },
+  recall: { title: '確認回收申請？', detail: '回收後將回到草稿。', label: '確認回收', variant: 'primary', success: '申請已回收' },
+  delete: { title: '確認刪除申請？', detail: '刪除後無法復原。', label: '確認刪除', variant: 'danger', success: '申請已刪除' },
+} as const;
 
 @Component({
   selector: 'app-publish',
   standalone: true,
-  imports: [NoahButtonComponent, NoahDialogComponent, NoahFileUploadComponent, NoahIconButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahSelectComponent, NoahTableComponent, NoahTableDetailComponent, NoahTableDetailContentComponent, RouterLink],
+  imports: [NoahButtonComponent, NoahDialogComponent, NoahFileUploadComponent, NoahIconButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahSelectComponent, NoahTableComponent, NoahTableDetailComponent, NoticeDetailComponent, NoticeDetailToggleComponent, RouterLink],
   templateUrl: './publish.component.html',
 })
 export class PublishComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly store = inject(NoticeStore);
   private readonly toast = inject(ToastService);
+  private readonly attachmentRead = signal<Promise<NoticeAttachment[]> | null>(null);
   readonly kindOptions = NOTICE_KIND_OPTIONS.map((option) => ({ value: option.id, label: option.label }));
   readonly audienceOptions = NOTICE_AUDIENCES.map((name) => ({ value: name, label: name }));
   readonly attachmentAccept = NOTICE_ATTACHMENT_ACCEPT;
   readonly attachmentLimit = NOTICE_ATTACHMENT_LIMIT;
+  readonly attachmentNameLimit = NOTICE_ATTACHMENT_NAME_LIMIT;
+  readonly readingAttachments = computed(() => this.attachmentRead() !== null);
+  readonly attachmentNameEdit = signal<{ attachment: NoticeAttachment; value: string } | null>(null);
   readonly mode = signal<'new' | 'mine'>('mine');
   readonly shownDate = shownDate;
   readonly statusLabel = statusLabel;
@@ -51,6 +65,7 @@ export class PublishComponent {
   readonly attachments = signal<NoticeAttachment[]>([]);
   readonly error = signal('');
   readonly openedApplicationId = signal<string | null>(null);
+  readonly confirmation = createConfirmation<{ title: string; message: string; label: string; variant: 'primary' | 'danger' }>();
   private readonly noticeId = signal(this.route.snapshot.paramMap.get('id') ?? '');
   readonly editing = computed(() => this.noticeId() !== '');
   readonly myApplications = computed(() => this.store.notices().filter((item) => item.owned));
@@ -72,6 +87,8 @@ export class PublishComponent {
   }
 
   private fill(id: string): void {
+    this.attachmentRead.set(null);
+    this.attachmentNameEdit.set(null);
     const item = id ? this.store.find(id) : undefined;
     this.kind.set(item?.kind ?? 'company');
     this.title.set(item?.title ?? '');
@@ -90,21 +107,49 @@ export class PublishComponent {
   }
 
   async pickAttachments(files: File[]): Promise<void> {
-    if (files.length === 0) return;
-    if (files.length > NOTICE_ATTACHMENT_LIMIT) {
+    if (files.length === 0 || this.readingAttachments()) return;
+    if (this.attachments().length + files.length > NOTICE_ATTACHMENT_LIMIT) {
       this.error.set(`附件最多 ${NOTICE_ATTACHMENT_LIMIT} 個。`);
       return;
     }
+    const read = Promise.all(files.map((file) => readAttachment(file)));
+    this.attachmentRead.set(read);
     try {
-      this.attachments.set(await Promise.all(files.map((file) => readAttachment(file))));
+      const attachments = await read;
+      if (this.attachmentRead() !== read) return;
+      this.attachments.update((items) => [...items, ...attachments]);
       this.error.set('');
     } catch (reason) {
-      this.error.set(reason instanceof Error ? reason.message : '附件讀取失敗。');
+      if (this.attachmentRead() === read) {
+        this.error.set(reason instanceof Error ? reason.message : '附件讀取失敗。');
+      }
+    } finally {
+      if (this.attachmentRead() === read) this.attachmentRead.set(null);
     }
   }
 
-  removeAttachment(index: number): void {
-    this.attachments.update((items) => items.filter((_, current) => current !== index));
+  editAttachmentName(attachment: NoticeAttachment): void {
+    if (this.attachmentNameEdit()?.attachment === attachment) return;
+    this.finishAttachmentNameEdit();
+    this.attachmentNameEdit.set({ attachment, value: attachmentLabel(attachment) });
+  }
+
+  updateAttachmentName(value: string): void {
+    this.attachmentNameEdit.update((edit) => edit && { ...edit, value });
+  }
+
+  finishAttachmentNameEdit(): void {
+    const edit = this.attachmentNameEdit();
+    if (!edit) return;
+    const value = edit.value.trim();
+    const displayName = value && value !== edit.attachment.name ? value : undefined;
+    this.attachments.update((items) => items.map((item) => item === edit.attachment ? { ...item, displayName } : item));
+    this.attachmentNameEdit.set(null);
+  }
+
+  removeAttachment(attachment: NoticeAttachment): void {
+    if (this.attachmentNameEdit()?.attachment === attachment) this.attachmentNameEdit.set(null);
+    this.attachments.update((items) => items.filter((item) => item !== attachment));
   }
 
   closeDialog(): void {
@@ -131,28 +176,29 @@ export class PublishComponent {
     this.openedApplicationId.update((current) => current === id ? null : id);
   }
 
-  async submitApplication(id: string): Promise<void> {
-    if (!await this.store.change(id, 'submit')) return;
-    this.openedApplicationId.set(null);
-    this.toast.showSuccess('申請已送出');
+  askApplicationAction(kind: keyof typeof applicationConfirmations, item: NoticeItem): void {
+    const { title, detail, label, variant } = applicationConfirmations[kind];
+    this.confirmation.open(
+      { title, message: `「${item.title}」${detail}`, label, variant },
+      () => this.runApplicationAction(kind, item.id),
+    );
   }
 
-  async recallApplication(id: string): Promise<void> {
-    if (!await this.store.change(id, 'recall')) return;
+  private async runApplicationAction(kind: keyof typeof applicationConfirmations, id: string): Promise<void> {
+    const saved = kind === 'delete' ? await this.store.deleteApplication(id) : await this.store.change(id, kind);
+    if (!saved) return;
     this.openedApplicationId.set(null);
-    this.toast.showSuccess('申請已回收');
-  }
-
-  async deleteApplication(id: string): Promise<void> {
-    if (!await this.store.deleteApplication(id)) return;
-    this.openedApplicationId.set(null);
-    if (this.noticeId() === id) this.closeDialog();
-    this.pagination.go(this.pagination.page());
-    this.toast.showSuccess('申請已刪除');
+    if (kind === 'delete') {
+      if (this.noticeId() === id) this.closeDialog();
+      this.pagination.go(this.pagination.page());
+    }
+    this.toast.showSuccess(applicationConfirmations[kind].success);
   }
 
   async save(event: Event): Promise<void> {
     event.preventDefault();
+    if (this.saving() || this.readingAttachments()) return;
+    this.finishAttachmentNameEdit();
     const draft = {
       kind: this.kind(),
       title: this.title().trim(),
@@ -165,12 +211,15 @@ export class PublishComponent {
       return;
     }
     this.error.set('');
-    if (!await this.store.save(draft, this.noticeId())) return;
-    if (!this.editing()) this.pagination.go(1);
-    this.noticeId.set('');
-    this.toast.showSuccess('申請已儲存');
-    this.fill('');
+    const id = this.noticeId();
     this.mode.set('mine');
+    if (!await this.store.save(draft, id)) {
+      this.mode.set('new');
+      return;
+    }
+    if (!id) this.pagination.go(1);
+    this.closeDialog();
+    this.toast.showSuccess('申請已儲存');
   }
 
 }

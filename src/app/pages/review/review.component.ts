@@ -1,14 +1,16 @@
-import { NoahButtonComponent, NoahIconButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahTableComponent, NoahTableDetailComponent, NoahTableDetailContentComponent } from '@dandy1103/ui';
+import { NoahButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahSegmentedControlComponent, NoahTableComponent, NoahTableDetailComponent } from '@dandy1103/ui';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ToastService } from '@dandy1103/common';
 import { applicantLabel, kindLabel, matchesKeyword, NoticeItem, reviewerLabel, shownDate, statusLabel, statusTone } from '../notices';
 import { NoticeStore } from '../notice-store';
+import { NoticeDetailComponent } from '../notice-detail/notice-detail.component';
+import { NoticeDetailToggleComponent } from '../notice-detail/notice-detail-toggle.component';
 import { paginateNotices } from '../notice-pagination';
 
 @Component({
   selector: 'app-review',
   standalone: true,
-  imports: [NoahTableComponent, NoahButtonComponent, NoahIconButtonComponent, NoahPageHeadingComponent, NoahInputComponent, NoahTableDetailComponent, NoahTableDetailContentComponent],
+  imports: [NoahTableComponent, NoahButtonComponent, NoahPageHeadingComponent, NoahSegmentedControlComponent, NoahInputComponent, NoahTableDetailComponent, NoticeDetailComponent, NoticeDetailToggleComponent],
   templateUrl: './review.component.html',
 })
 export class ReviewComponent {
@@ -26,6 +28,10 @@ export class ReviewComponent {
   readonly reviewerLabel = reviewerLabel;
   readonly shownDate = shownDate;
   readonly view = signal<'pending' | 'processed'>('pending');
+  readonly viewOptions = [
+    { value: 'pending', label: '待審理案件' },
+    { value: 'processed', label: '已審理案件' },
+  ] as const;
   readonly filterText = signal('');
   readonly opened = signal<NoticeItem | null>(null);
   readonly rejectingId = signal<string | null>(null);
@@ -54,7 +60,8 @@ export class ReviewComponent {
     this.pagination.go(1);
   }
 
-  setView(view: 'pending' | 'processed'): void {
+  setView(view: string): void {
+    if (view !== 'pending' && view !== 'processed') return;
     this.view.set(view);
     this.pagination.go(1);
     this.opened.set(null);

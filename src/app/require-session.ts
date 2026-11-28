@@ -23,24 +23,16 @@ function checkSession(): Promise<boolean> {
   return sessionCheck;
 }
 
-export const requireSession: CanActivateFn = () => {
-  const store = inject(NoticeStore);
-  return store.loading.run(async () => {
-    if (!await checkSession()) return false;
-    return store.ensureView();
-  });
-};
+export const requireSession: CanActivateFn = () => checkSession();
 
 export async function signedIn(): Promise<boolean> {
   return checkSession();
 }
 
-export function requireDefaultNotices(): CanActivateFn {
-  return () => {
-    const store = inject(NoticeStore);
-    return store.loading.run(() => store.ensureView());
-  };
-}
+export const requireDefaultNotices: CanActivateFn = () => {
+  const store = inject(NoticeStore);
+  return store.loading.run(() => store.ensureView());
+};
 
 export function requireAnnouncementManagement(view: 'manage' | 'reviews'): CanActivateFn {
   return () => {

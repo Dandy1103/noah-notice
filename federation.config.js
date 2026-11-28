@@ -13,6 +13,12 @@ module.exports = withNativeFederation({
   },
 
   skip: [
+    '@file-viewer/core',
+    '@file-viewer/doc',
+    '@file-viewer/renderer-presentation',
+    '@file-viewer/renderer-spreadsheet',
+    'mammoth',
+    'pdfjs-dist',
     'rxjs/ajax',
     'rxjs/fetch',
     'rxjs/testing',

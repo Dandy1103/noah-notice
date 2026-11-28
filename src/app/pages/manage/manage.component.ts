@@ -1,15 +1,17 @@
-import { NoahButtonComponent, NoahDialogComponent, NoahIconButtonComponent, NoahInputComponent, NoahPageHeadingComponent, NoahSelectComponent, NoahTableComponent, NoahTableDetailComponent, NoahTableDetailContentComponent } from '@dandy1103/ui';
+import { NoahButtonComponent, NoahDialogComponent, NoahInputComponent, NoahPageHeadingComponent, NoahSelectComponent, NoahTableComponent, NoahTableDetailComponent } from '@dandy1103/ui';
 import { Component, computed, inject, signal } from '@angular/core';
-import { ToastService } from '@dandy1103/common';
+import { createConfirmation, ToastService } from '@dandy1103/common';
 import { kindLabel, matchesKeyword, matchesNoticeQuery, NoticeItem, shownDate, statusLabel, statusTone, uniqueNames } from '../notices';
 import { NoticeStore } from '../notice-store';
+import { NoticeDetailComponent } from '../notice-detail/notice-detail.component';
+import { NoticeDetailToggleComponent } from '../notice-detail/notice-detail-toggle.component';
 import { paginateNotices } from '../notice-pagination';
 
 
 @Component({
   selector: 'app-manage',
   standalone: true,
-  imports: [NoahTableComponent, NoahButtonComponent, NoahDialogComponent, NoahIconButtonComponent, NoahPageHeadingComponent, NoahInputComponent, NoahSelectComponent, NoahTableDetailComponent, NoahTableDetailContentComponent],
+  imports: [NoahTableComponent, NoahButtonComponent, NoahDialogComponent, NoahPageHeadingComponent, NoahInputComponent, NoahSelectComponent, NoahTableDetailComponent, NoticeDetailComponent, NoticeDetailToggleComponent],
   templateUrl: './manage.component.html',
 })
 export class ManageComponent {
@@ -24,11 +26,8 @@ export class ManageComponent {
   readonly statusLabel = statusLabel;
   readonly statusTone = statusTone;
   readonly shownDate = shownDate;
-  readonly pendingId = signal<string | null>(null);
-  readonly pendingNotice = computed(() => {
-    const id = this.pendingId();
-    return id ? this.store.find(id) : undefined;
-  });
+  readonly confirmation = createConfirmation<{ title: string }>();
+  readonly saving = this.store.saving;
   readonly opened = signal<NoticeItem | null>(null);
   readonly account = this.store.account;
   readonly audiencePick = signal('');
@@ -67,7 +66,7 @@ export class ManageComponent {
     this.unit.set(this.unitPick());
     this.titleQuery.set(this.titlePick().trim());
     this.pagination.go(1);
-    this.pendingId.set(null);
+    this.confirmation.cancel();
   }
 
   clear(): void {
@@ -78,13 +77,13 @@ export class ManageComponent {
     this.unit.set('');
     this.titleQuery.set('');
     this.pagination.go(1);
-    this.pendingId.set(null);
+    this.confirmation.cancel();
   }
 
   pickFilter(event: Event): void {
     this.filterText.set(this.fieldValue(event));
     this.pagination.go(1);
-    this.pendingId.set(null);
+    this.confirmation.cancel();
   }
 
   openNotice(id: string): void {
@@ -92,21 +91,16 @@ export class ManageComponent {
     if (item) this.opened.update((opened) => opened?.id === id ? null : item);
   }
 
-  askWithdraw(id: string): void {
-    this.pendingId.set(id);
+  askWithdraw(item: NoticeItem): void {
+    this.confirmation.open({ title: item.title }, () => this.withdraw(item.id));
   }
 
-  cancelWithdraw(): void {
-    this.pendingId.set(null);
-  }
-
-  async withdraw(id: string): Promise<void> {
+  private async withdraw(id: string): Promise<void> {
     if (!await this.store.change(id, 'withdraw')) return;
-    this.pendingId.set(null);
     this.toast.showSuccess('下架成功');
   }
 
   onPageChange(): void {
-    this.pendingId.set(null);
+    this.confirmation.cancel();
   }
 }

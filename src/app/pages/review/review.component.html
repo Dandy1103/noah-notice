@@ -1,22 +1,12 @@
 @if (account()?.canManage) {
   <noah-page-heading title="公告申請審核" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: '申請處理' }]" />
 
-  <div class="u-inline-flex u-gap-sm u-mb-md" role="group" aria-label="案件範圍">
-    <noah-button
-      type="button"
-      size="small"
-      [variant]="view() === 'pending' ? 'primary' : 'secondary'"
-      [ariaPressed]="view() === 'pending'"
-      message="待審案件"
-      (click)="setView('pending')" />
-    <noah-button
-      type="button"
-      size="small"
-      [variant]="view() === 'processed' ? 'primary' : 'secondary'"
-      [ariaPressed]="view() === 'processed'"
-      message="已處理案件"
-      (click)="setView('processed')" />
-  </div>
+  <noah-segmented-control
+    class="u-mb-md"
+    label="案件範圍"
+    [options]="viewOptions"
+    [value]="view()"
+    (valueChange)="setView($event)" />
 
   <div class="u-bar-grid u-mt-md u-mb-md">
     <noah-input class="u-col-end-2" ariaLabel="篩選" placeholder="篩選關鍵字" [value]="filterText()" (input)="pickFilter($event)" />
@@ -32,90 +22,86 @@
       <colgroup>
         <col class="u-table-span-1">
         <col class="u-table-span-1">
+        <col class="u-table-span-4">
         <col class="u-table-span-1">
-        <col class="u-table-span-3">
         <col class="u-table-span-1">
-        <col class="u-table-span-1">
-        <col class="u-table-span-2">
         <col class="u-table-span-2">
       </colgroup>
       <thead>
         <tr>
-          <th scope="col">編號</th>
           <th scope="col">類型</th>
           <th scope="col">申請單位</th>
           <th scope="col">主旨</th>
           <th scope="col">申請人</th>
           <th scope="col">對象</th>
           <th scope="col">送審時間</th>
-          <th scope="col">操作</th>
         </tr>
       </thead>
       <tbody>
         @for (item of pagination.rows(); track item.id; let isEven = $even) {
-          <tr class="is-link" [class.is-even]="isEven" [class.is-odd]="!isEven" [class.is-expanded]="opened()?.id === item.id" tabindex="0" (click)="openNotice(item.id)" (keydown.enter)="openNotice(item.id)">
-            <td>{{ item.serial }}</td>
+          <tr class="is-link" [class.is-even]="isEven" [class.is-odd]="!isEven" [class.is-expanded]="opened()?.id === item.id" (click)="openNotice(item.id)">
             <td>{{ kindLabel(item.kind) }}</td>
             <td>{{ item.unit }}</td>
-            <td class="title u-font-semibold">{{ item.title }}</td>
+            <td class="title">
+              <button [appNoticeDetailToggle]="item.title" [expanded]="opened()?.id === item.id" (toggleRequested)="openNotice(item.id)"></button>
+            </td>
             <td>{{ applicantLabel(item) }}</td>
             <td>{{ item.audience }}</td>
             <td><time class="u-text-secondary" [attr.datetime]="item.publishedOn">{{ shownDate(item.publishedOn) }}</time></td>
-            <td class="actions">
-              <noah-icon-button icon="view" label="查看" variant="primary" (click)="$event.stopPropagation(); openNotice(item.id)" />
-            </td>
           </tr>
           @if (opened()?.id === item.id) {
-            <tr noahTableDetail [colspan]="8">
-              <noah-table-detail-content [body]="item.body" [attachments]="item.attachments">
-                <section class="noah-table-detail__result">
-                  <h3 class="u-text-secondary">{{ item.status === 'pending' ? '審核操作' : '處理結果' }}</h3>
-                  @if (item.status === 'pending') {
-                    @if (rejectingId() === item.id) {
-                      <div class="u-flex u-flex-col u-gap-sm">
-                        <noah-input
-                          class="u-w-full"
-                          ariaLabel="退件原因"
-                          placeholder="請輸入退件原因"
-                          autofocus
-                          [value]="reason()"
-                          [invalid]="reasonError()"
-                          (input)="reason.set(fieldValue($event)); reasonError.set(false)" />
-                        <div class="u-flex u-flex-wrap u-items-center u-justify-end u-gap-sm">
-                          <noah-button type="button" size="small" variant="secondary" message="返回" (click)="cancelReject()" />
-                          <noah-button type="button" size="small" variant="danger" message="送出退件" [disabled]="saving()" (click)="confirmReject(item.id)" />
-                        </div>
+            <tr noahTableDetail class="notice-detail-row" [colspan]="6">
+              <app-notice-detail [notice]="item" reference="application" />
+              <section class="noah-table-detail__result">
+                <h3 class="u-text-secondary">{{ item.status === 'pending' ? '審核操作' : '處理結果' }}</h3>
+                @if (item.status === 'pending') {
+                  @if (rejectingId() === item.id) {
+                    <div class="u-flex u-flex-col u-gap-sm">
+                      <noah-input
+                        class="u-w-full"
+                        ariaLabel="退件原因"
+                        placeholder="請輸入退件原因"
+                        autofocus
+                        [value]="reason()"
+                        [invalid]="reasonError()"
+                        (input)="reason.set(fieldValue($event)); reasonError.set(false)" />
+                      <div class="notice-application-actions">
+                        <noah-button type="button" size="small" variant="secondary" message="返回" (click)="cancelReject()" />
+                        <noah-button type="button" size="small" variant="danger" message="送出退件" [disabled]="saving()" (click)="confirmReject(item.id)" />
                       </div>
-                    } @else {
-                      <div class="u-flex u-items-center u-justify-end u-gap-sm">
-                        <noah-button type="button" size="small" message="核准上架" [disabled]="saving()" (click)="agree(item.id)" />
-                        <noah-button type="button" size="small" variant="danger" message="退回修改" (click)="startReject(item.id)" />
-                      </div>
-                    }
+                    </div>
                   } @else {
-                    <div class="noah-table-detail__result-body u-flex u-flex-wrap u-items-center u-gap-sm">
+                    <div class="notice-application-footer">
                       <span class="status-tag" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item.status) }}</span>
-                      <p>審核者：{{ reviewerLabel(item) }}</p>
-                      @if (item.reviewedOn) {
-                        <p>審核時間：{{ shownDate(item.reviewedOn) }}</p>
-                      }
-                      @if (item.rejectReason) {
-                        <p>退件原因：{{ item.rejectReason }}</p>
-                      }
+                      <div class="notice-application-actions">
+                        <noah-button type="button" size="small" variant="secondary" message="退回修改" (click)="startReject(item.id)" />
+                        <noah-button type="button" size="small" message="核准上架" [disabled]="saving()" (click)="agree(item.id)" />
+                      </div>
                     </div>
                   }
-                </section>
-              </noah-table-detail-content>
+                } @else {
+                  <div class="noah-table-detail__result-body u-flex u-flex-wrap u-items-center u-gap-sm">
+                    <span class="status-tag" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item.status) }}</span>
+                    <p>審核者：{{ reviewerLabel(item) }}</p>
+                    @if (item.reviewedOn) {
+                      <p>審核時間：{{ shownDate(item.reviewedOn) }}</p>
+                    }
+                    @if (item.rejectReason) {
+                      <p>退件原因：{{ item.rejectReason }}</p>
+                    }
+                  </div>
+                }
+              </section>
             </tr>
           }
         }
         @if (pagination.rows().length === 0) {
           <tr class="is-empty">
-            <td colspan="8"><p class="u-m-0 u-text-secondary">{{ emptyText() }}</p></td>
+            <td colspan="6"><p class="u-m-0 u-text-secondary">{{ emptyText() }}</p></td>
           </tr>
         } @else {
           @for (blank of pagination.blanks(); track blank) {
-            <tr class="is-blank" aria-hidden="true"><td colspan="8"></td></tr>
+            <tr class="is-blank" aria-hidden="true"><td colspan="6"></td></tr>
           }
         }
       </tbody>

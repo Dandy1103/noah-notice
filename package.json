@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "ng": "ng",
-    "start": "node scripts/dev.mjs notice 4302",
+    "start": "node ../noah-dev/scripts/dev.mjs notice",
     "build": "ng build"
   },
   "dependencies": {
@@ -17,8 +17,14 @@
     "@angular/platform-browser": "^17.3.0",
     "@angular/router": "^17.3.0",
     "@dandy1103/common": "^0.1.0",
-    "@dandy1103/ui": "^0.1.52",
+    "@dandy1103/ui": "^0.1.54",
+    "@file-viewer/core": "3.3.7",
+    "@file-viewer/doc": "3.3.7",
+    "@file-viewer/renderer-presentation": "3.3.7",
+    "@file-viewer/renderer-spreadsheet": "3.3.7",
     "es-module-shims": "^1.5.12",
+    "mammoth": "1.13.0",
+    "pdfjs-dist": "5.6.205",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"

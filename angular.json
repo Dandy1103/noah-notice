@@ -46,7 +46,14 @@
 						"inlineStyleLanguage": "scss",
 						"assets": [
 							"src/favicon.ico",
-							"src/assets"
+							"src/assets",
+							{ "glob": "pdf.worker.min.mjs", "input": "node_modules/pdfjs-dist/build", "output": "notice-preview" },
+							{ "glob": "**/*", "input": "node_modules/pdfjs-dist/cmaps", "output": "notice-preview/cmaps" },
+							{ "glob": "**/*", "input": "node_modules/pdfjs-dist/iccs", "output": "notice-preview/iccs" },
+							{ "glob": "**/*", "input": "node_modules/pdfjs-dist/standard_fonts", "output": "notice-preview/standard_fonts" },
+							{ "glob": "**/*", "input": "node_modules/pdfjs-dist/wasm", "output": "notice-preview/wasm" },
+							{ "glob": "pptjs.worker.js", "input": "node_modules/@file-viewer/ppt/dist", "output": "notice-preview" },
+							{ "glob": "pptx.worker.js", "input": "node_modules/@file-viewer/pptx/dist/worker", "output": "notice-preview" }
 						],
 						"styles": [
 							"src/styles.scss"

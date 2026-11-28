@@ -1,24 +1,16 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NoahButtonComponent, NoahDialogComponent, NoahLoadingMaskComponent } from '@dandy1103/ui';
+import { NoahButtonComponent, NoahDialogComponent } from '@dandy1103/ui';
 import { NoticeStore } from './pages/notice-store';
 import { sendToLogin } from './require-session';
 
 @Component({
   selector: 'app-remote-frame',
   standalone: true,
-  imports: [RouterOutlet, NoahButtonComponent, NoahDialogComponent, NoahLoadingMaskComponent],
+  imports: [RouterOutlet, NoahButtonComponent, NoahDialogComponent],
   template: `
     @switch (loadState()) {
-      @case ('ready') {
-        @if (busy()) {
-          <noah-loading-mask phase="visible" label="載入中" />
-        }
-        <router-outlet />
-      }
-      @case ('loading') {
-        <noah-loading-mask phase="visible" label="正在載入公告" />
-      }
+      @case ('ready') { <router-outlet /> }
       @case ('login') {
         <noah-dialog
           [open]="true"
@@ -41,7 +33,6 @@ import { sendToLogin } from './require-session';
 export class RemoteFrameComponent {
   private readonly store = inject(NoticeStore);
   readonly loadState = this.store.loadState;
-  readonly busy = computed(() => this.store.isRefreshing() || this.store.loading.phase() !== 'hidden');
 
   signInAgain(): void {
     sendToLogin();

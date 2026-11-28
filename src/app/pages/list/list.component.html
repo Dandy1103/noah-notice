@@ -1,6 +1,7 @@
-<noah-page-heading [title]="heading()" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: title() }]" />
+<section class="notice-page notice-page-public">
+  <noah-page-heading [title]="heading()" [breadcrumbs]="[{ label: '首頁', href: portalHome }, { label: title() }]" />
 
-<form class="u-bar-grid u-items-end u-mb-md" (submit)="search($event)">
+<form class="notice-query u-bar-grid u-items-end u-mb-md" (submit)="search($event)">
   <noah-select class="u-col-span-2" label="對象" emptyLabel="全部" [value]="audiencePick()" [options]="audienceChoices()" (valueChange)="audiencePick.set($event)" />
   <noah-select class="u-col-span-2" label="單位" emptyLabel="全部" [value]="unitPick()" [options]="unitChoices()" (valueChange)="unitPick.set($event)" />
   <noah-input class="u-col-span-2" label="主旨" placeholder="輸入主旨" [value]="titlePick()" (input)="titlePick.set(fieldValue($event))" />
@@ -10,7 +11,7 @@
   </div>
 </form>
 
-<div class="u-bar-grid u-mt-md u-mb-md">
+<div class="notice-filter u-bar-grid u-mt-md u-mb-md">
   <noah-input class="u-col-end-2" ariaLabel="篩選" placeholder="篩選關鍵字" [value]="filterText()" (input)="pickFilter($event)" />
 </div>
 
@@ -22,15 +23,13 @@
   (pageChange)="pagination.go($event)">
   <table>
     <colgroup>
-      <col class="u-table-span-1">
-      <col class="u-table-span-1">
+      <col class="u-table-span-2">
       <col class="u-table-span-7">
       <col class="u-table-span-1">
       <col class="u-table-span-2">
     </colgroup>
     <thead>
       <tr>
-        <th scope="col">編號</th>
         <th scope="col">單位</th>
         <th scope="col">主旨</th>
         <th scope="col">對象</th>
@@ -39,28 +38,30 @@
     </thead>
     <tbody>
       @for (item of pagination.rows(); track item.id; let isEven = $even) {
-        <tr class="is-link" [class.is-even]="isEven" [class.is-odd]="!isEven" [class.is-expanded]="opened()?.id === item.id" tabindex="0" (click)="openNotice(item.id)" (keydown.enter)="openNotice(item.id)">
-          <td>{{ item.serial }}</td>
+        <tr class="is-link" [class.is-even]="isEven" [class.is-odd]="!isEven" [class.is-expanded]="opened()?.id === item.id" (click)="openNotice(item.id)">
           <td>{{ item.unit }}</td>
-          <td class="title u-font-semibold">{{ item.title }}</td>
+          <td class="title">
+            <button [appNoticeDetailToggle]="item.title" [expanded]="opened()?.id === item.id" (toggleRequested)="openNotice(item.id)"></button>
+          </td>
           <td>{{ item.audience }}</td>
           <td><time class="u-text-secondary" [attr.datetime]="item.listedOn">{{ shownDate(item.listedOn) }}</time></td>
         </tr>
         @if (opened()?.id === item.id) {
-          <tr noahTableDetail [colspan]="5">
-            <noah-table-detail-content [body]="item.body" [attachments]="item.attachments" />
+          <tr noahTableDetail class="notice-detail-row" [colspan]="4">
+            <app-notice-detail [notice]="item" reference="document" />
           </tr>
         }
       }
       @if (pagination.rows().length === 0) {
         <tr class="is-empty">
-          <td colspan="5"><p class="u-m-0 u-text-secondary">{{ emptyText() }}</p></td>
+          <td colspan="4"><p class="u-m-0 u-text-secondary">{{ emptyText() }}</p></td>
         </tr>
       } @else {
         @for (blank of pagination.blanks(); track blank) {
-          <tr class="is-blank" aria-hidden="true"><td colspan="5"></td></tr>
+          <tr class="is-blank" aria-hidden="true"><td colspan="4"></td></tr>
         }
       }
     </tbody>
   </table>
 </noah-table>
+</section>
